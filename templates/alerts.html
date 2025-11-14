@@ -1,0 +1,1997 @@
+{% extends "base.html" %}
+
+{% block title %}التنبيهات - نظام مراقبة الأجهزة{% endblock %}
+
+{% block content %}
+<div class="alerts-page">
+    <!-- شريط التنقل السريع -->
+    <div class="quick-nav mb-4">
+        <div class="card">
+            <div class="card-body">
+                <nav class="breadcrumb-nav">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('dashboard.index') }}" class="breadcrumb-link">
+                                <i class="fas fa-home"></i>
+                                الرئيسية
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <i class="fas fa-bell"></i>
+                            التنبيهات
+                        </li>
+                    </ol>
+                </nav>
+                
+                <!-- روابط سريعة -->
+                <div class="quick-links mt-3">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('dashboard.index') }}" class="quick-link-card">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>لوحة التحكم</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('devices.devices_list') }}" class="quick-link-card">
+                                <i class="fas fa-desktop"></i>
+                                <span>الأجهزة</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('reports') }}" class="quick-link-card">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>التقارير</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('analytics.analytics_page') }}" class="quick-link-card">
+                                <i class="fas fa-chart-line"></i>
+                                <span>التحليلات المتقدمة</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('help') }}" class="quick-link-card">
+                                <i class="fas fa-question-circle"></i>
+                                <span>المساعدة</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div class="alerts-page">
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="page-title">
+                            <i class="fas fa-bell"></i>
+                            التنبيهات
+                        </h1>
+                        <p class="page-subtitle">مراقبة وإدارة جميع التنبيهات والأحداث في النظام</p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt"></i>
+                            لوحة التحكم
+                        </a>
+                        <a href="{{ url_for('devices.devices_list') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-desktop"></i>
+                            الأجهزة
+                        </a>
+                        <a href="{{ url_for('reports') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar"></i>
+                            التقارير
+                        </a>
+                        <button class="btn btn-primary" id="refresh-btn" data-action="refresh">
+                            <i class="fas fa-sync-alt"></i>
+                            تحديث
+                        </button>
+                        <button class="btn btn-success" onclick="markAllAsRead()">
+                            <i class="fas fa-check-double"></i>
+                            تأكيد الكل
+                        </button>
+                        <button class="btn btn-warning" onclick="clearAllAlerts()">
+                            <i class="fas fa-trash"></i>
+                            مسح الكل
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إحصائيات التنبيهات -->
+    <div class="alerts-stats">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-number" id="total-alerts">{{ alerts|length }}</div>
+                <div class="stat-label">إجمالي التنبيهات</div>
+            </div>
+            
+            <div class="stat-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-number" id="critical-alerts">{{ alerts|selectattr('type', 'equalto', 'critical')|list|length }}</div>
+                <div class="stat-label">تنبيهات حرجة</div>
+            </div>
+            
+            <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                <div class="stat-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-number" id="warning-alerts">{{ alerts|selectattr('type', 'equalto', 'warning')|list|length }}</div>
+                <div class="stat-label">تنبيهات تحذيرية</div>
+            </div>
+            
+            <div class="stat-card" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-number" id="resolved-alerts">{{ alerts|selectattr('status', 'equalto', 'resolved')|list|length }}</div>
+                <div class="stat-label">تم حلها</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فلاتر التنبيهات -->
+    <div class="filters-section">
+        <div class="card">
+            <div class="card-body">
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label for="type-filter" class="filter-label">
+                            <i class="fas fa-filter"></i>
+                            نوع التنبيه
+                        </label>
+                        <select id="type-filter" class="form-control">
+                            <option value="">جميع الأنواع</option>
+                            <option value="critical">حرج</option>
+                            <option value="warning">تحذير</option>
+                            <option value="info">معلومات</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="status-filter" class="filter-label">
+                            <i class="fas fa-check-circle"></i>
+                            حالة التنبيه
+                        </label>
+                        <select id="status-filter" class="form-control">
+                            <option value="">جميع الحالات</option>
+                            <option value="active">نشط</option>
+                            <option value="acknowledged">مؤكد</option>
+                            <option value="resolved">محلول</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="device-filter" class="filter-label">
+                            <i class="fas fa-desktop"></i>
+                            الجهاز
+                        </label>
+                        <select id="device-filter" class="form-control">
+                            <option value="">جميع الأجهزة</option>
+                            <option value="جهاز المختبر 1">جهاز المختبر 1</option>
+                            <option value="جهاز المكتب 2">جهاز المكتب 2</option>
+                            <option value="جهاز القاعة 3">جهاز القاعة 3</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="date-filter" class="filter-label">
+                            <i class="fas fa-calendar"></i>
+                            التاريخ
+                        </label>
+                        <select id="date-filter" class="form-control">
+                            <option value="">جميع التواريخ</option>
+                            <option value="today">اليوم</option>
+                            <option value="week">هذا الأسبوع</option>
+                            <option value="month">هذا الشهر</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <button class="btn btn-outline-primary" onclick="clearFilters()">
+                            <i class="fas fa-times"></i>
+                            مسح الفلاتر
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- قائمة التنبيهات -->
+    <div class="alerts-list-section">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="card-title">
+                        <i class="fas fa-list"></i>
+                        قائمة التنبيهات
+                    </h2>
+                    <div class="view-options">
+                        <div class="view-toggle">
+                            <button class="btn btn-outline-primary active" id="list-view-btn" onclick="toggleView('list')">
+                                <i class="fas fa-list"></i>
+                            </button>
+                            <button class="btn btn-outline-primary" id="timeline-view-btn" onclick="toggleView('timeline')">
+                                <i class="fas fa-stream"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <!-- عرض القائمة -->
+                <div id="list-view" class="alerts-list">
+                    <div id="loading-alerts" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">جاري التحميل...</span>
+                        </div>
+                        <p class="mt-3">جاري تحميل التنبيهات...</p>
+                    </div>
+                </div>
+                
+                <!-- عرض الجدول الزمني -->
+                <div id="timeline-view" class="alerts-timeline" style="display: none;">
+                    <div id="loading-timeline" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">جاري التحميل...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إعدادات التنبيهات -->
+    <div class="alert-settings">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-cog"></i>
+                    إعدادات التنبيهات
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>التنبيهات الفورية</h4>
+                            <p>إرسال تنبيهات فورية عند حدوث مشاكل حرجة</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>التنبيهات بالبريد الإلكتروني</h4>
+                            <p>إرسال تنبيهات إلى البريد الإلكتروني</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>التنبيهات النصية</h4>
+                            <p>إرسال تنبيهات عبر الرسائل النصية</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>التنبيهات الصوتية</h4>
+                            <p>تشغيل أصوات تنبيه عند حدوث مشاكل</p>
+                        </div>
+                        <div class="setting-control">
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة تفاصيل التنبيه -->
+<div id="alert-details-modal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>تفاصيل التنبيه</h3>
+            <button class="close" onclick="closeModal('alert-details-modal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="alert-details-content">
+                <!-- سيتم ملؤها بواسطة JavaScript -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('alert-details-modal')">إغلاق</button>
+            <button class="btn btn-primary" onclick="acknowledgeCurrentAlert()">تأكيد</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alerts-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    /* شريط التنقل السريع */
+    .quick-nav .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--glass-shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-link {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    /* الروابط السريعة */
+    .quick-links {
+        margin-top: 1rem;
+    }
+
+    .quick-link-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quick-link-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .quick-link-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .quick-link-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(31, 38, 135, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .quick-link-card i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transition: all 0.3s ease;
+    }
+
+    .quick-link-card:hover i {
+        transform: scale(1.1);
+    }
+
+    .quick-link-card span {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* أزرار التنقل */
+    .btn-outline-primary {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-outline-warning {
+        background: transparent;
+        color: var(--warning);
+        border: 2px solid var(--warning);
+    }
+
+    .btn-outline-warning:hover {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-outline-info {
+        background: transparent;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
+    }
+
+    .btn-outline-info:hover {
+        background: #17a2b8;
+        color: white;
+    }
+
+    /* تحسين الأزرار */
+    .page-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .page-actions .btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.85rem;
+        border-radius: 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .page-actions .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .page-actions .btn:hover::before {
+        left: 100%;
+    }
+
+    .page-actions .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: var(--primary-gradient);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+        border: none;
+    }
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(39, 174, 96, 0.4);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+        border: none;
+    }
+
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #e67e22, #f39c12);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+    }
+
+    .alerts-stats {
+        margin-bottom: 1.5rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        padding: 1.5rem;
+        text-align: center;
+        color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(31, 38, 135, 0.4);
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 500;
+    }
+
+    .filters-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .filters-section .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .filter-label i {
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 15px;
+        color: white;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        color: white;
+    }
+
+    .form-control option {
+        background: #2c3e50;
+        color: white;
+    }
+
+    .alerts-list-section {
+        margin-bottom: 1.5rem;
+    }
+
+    .alerts-list-section .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .alert-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .alert-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .alert-item:hover::before {
+        transform: scaleX(1);
+    }
+
+    .alert-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(31, 38, 135, 0.3);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .alert-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .alert-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        margin: 0;
+    }
+
+    .alert-time {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .alert-body {
+        margin-bottom: 1rem;
+    }
+
+    .alert-message {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.6;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-device {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .alert-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .alert-actions .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        border-radius: 15px;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
+        color: white;
+    }
+
+    .status-acknowledged {
+        background: linear-gradient(135deg, #f39c12, #e67e22);
+        color: white;
+    }
+
+    .status-resolved {
+        background: linear-gradient(135deg, #27ae60, #2ecc71);
+        color: white;
+    }
+
+    .type-critical {
+        border-left: 4px solid #e74c3c;
+    }
+
+    .type-warning {
+        border-left: 4px solid #f39c12;
+    }
+
+    .type-info {
+        border-left: 4px solid #3498db;
+    }
+
+    /* تحسين الاستجابة */
+    @media (max-width: 768px) {
+        .alerts-page {
+            padding: 1rem;
+        }
+
+        .page-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .page-actions .btn {
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .stat-card {
+            padding: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+        }
+
+        .filters-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .alert-item {
+            padding: 1rem;
+        }
+
+        .alert-actions {
+            flex-direction: column;
+        }
+
+        .alert-actions .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .stat-card {
+            padding: 0.75rem;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+        }
+    }
+
+    .view-options {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .view-toggle {
+        display: flex;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .view-toggle .btn {
+        border: none;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .view-toggle .btn.active {
+        background: #3498db;
+        color: white;
+    }
+
+    .alert-item {
+        display: flex;
+        align-items: flex-start;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid #3498db;
+        transition: all 0.3s ease;
+    }
+
+    .alert-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .alert-item.alert-critical {
+        border-left-color: #e74c3c;
+    }
+
+    .alert-item.alert-warning {
+        border-left-color: #f39c12;
+    }
+
+    .alert-icon {
+        font-size: 1.5rem;
+        margin-left: 1rem;
+        color: #3498db;
+        margin-top: 0.25rem;
+    }
+
+    .alert-item.alert-critical .alert-icon {
+        color: #e74c3c;
+    }
+
+    .alert-item.alert-warning .alert-icon {
+        color: #f39c12;
+    }
+
+    .alert-content {
+        flex: 1;
+    }
+
+    .alert-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+
+    .alert-title {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .alert-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.25rem;
+    }
+
+    .alert-type {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .type-critical {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .type-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .type-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .alert-time {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .alert-message {
+        color: #34495e;
+        margin-bottom: 1rem;
+        line-height: 1.5;
+    }
+
+    .alert-details {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.8rem;
+        color: #7f8c8d;
+        font-weight: bold;
+    }
+
+    .detail-value {
+        color: #2c3e50;
+        font-weight: bold;
+    }
+
+    .status-active {
+        color: #e74c3c;
+    }
+
+    .status-acknowledged {
+        color: #f39c12;
+    }
+
+    .status-resolved {
+        color: #27ae60;
+    }
+
+    .alert-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-right: 1rem;
+    }
+
+    .no-alerts {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #7f8c8d;
+    }
+
+    .no-alerts i {
+        font-size: 4rem;
+        color: #27ae60;
+        margin-bottom: 1rem;
+    }
+
+    .no-alerts h3 {
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .alerts-timeline {
+        padding: 2rem 0;
+    }
+
+    .timeline {
+        position: relative;
+        padding-right: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        right: 1rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #ecf0f1;
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        padding-right: 3rem;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        right: 0.5rem;
+        top: 0.5rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        background: #3498db;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        z-index: 1;
+    }
+
+    .timeline-item.alert-critical .timeline-marker {
+        background: #e74c3c;
+    }
+
+    .timeline-item.alert-warning .timeline-marker {
+        background: #f39c12;
+    }
+
+    .timeline-content {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-header h4 {
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .timeline-time {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+    }
+
+    .timeline-message {
+        color: #34495e;
+        margin-bottom: 1rem;
+    }
+
+    .timeline-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .alert-settings {
+        margin-bottom: 2rem;
+    }
+
+    .settings-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .setting-info h4 {
+        margin-bottom: 0.25rem;
+        color: #2c3e50;
+    }
+
+    .setting-info p {
+        margin: 0;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #3498db;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 15px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        color: #2c3e50;
+    }
+
+    .modal-header .close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #7f8c8d;
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-top: 1px solid #dee2e6;
+    }
+
+    @media (max-width: 768px) {
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .alert-item {
+            flex-direction: column;
+        }
+        
+        .alert-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .alert-meta {
+            align-items: flex-start;
+            margin-top: 0.5rem;
+        }
+        
+        .alert-details {
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .alert-actions {
+            flex-direction: row;
+            margin: 1rem 0 0 0;
+        }
+        
+        .timeline {
+            padding-right: 1rem;
+        }
+        
+        .timeline-item {
+            padding-right: 2rem;
+        }
+        
+        .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentView = 'list';
+    let currentAlertId = null;
+
+    // تبديل العرض
+    function toggleView(view) {
+        currentView = view;
+        const listView = document.getElementById('list-view');
+        const timelineView = document.getElementById('timeline-view');
+        const listBtn = document.getElementById('list-view-btn');
+        const timelineBtn = document.getElementById('timeline-view-btn');
+
+        if (view === 'list') {
+            listView.style.display = 'block';
+            timelineView.style.display = 'none';
+            listBtn.classList.add('active');
+            timelineBtn.classList.remove('active');
+        } else {
+            listView.style.display = 'none';
+            timelineView.style.display = 'block';
+            timelineBtn.classList.add('active');
+            listBtn.classList.remove('active');
+        }
+    }
+
+    // تأكيد جميع التنبيهات
+    function markAllAsRead() {
+        if (confirm('هل أنت متأكد من تأكيد جميع التنبيهات؟')) {
+            showNotification('تم تأكيد جميع التنبيهات', 'success');
+            // تحديث واجهة المستخدم
+            document.querySelectorAll('.alert-item').forEach(item => {
+                const btn = item.querySelector('[data-action="acknowledge-alert"]');
+                if (btn) {
+                    btn.textContent = 'تم التأكيد';
+                    btn.disabled = true;
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-secondary');
+                }
+            });
+        }
+    }
+
+    // مسح جميع التنبيهات
+    function clearAllAlerts() {
+        if (confirm('هل أنت متأكد من مسح جميع التنبيهات؟')) {
+            showNotification('تم مسح جميع التنبيهات', 'success');
+            document.querySelectorAll('.alert-item').forEach(item => {
+                item.style.opacity = '0.5';
+                setTimeout(() => item.remove(), 500);
+            });
+        }
+    }
+
+    // تأكيد تنبيه
+    function acknowledgeAlert(alertId) {
+        const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+        if (alertElement) {
+            const btn = alertElement.querySelector('[data-action="acknowledge-alert"]');
+            if (btn) {
+                btn.textContent = 'تم التأكيد';
+                btn.disabled = true;
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            }
+            showNotification('تم تأكيد التنبيه', 'success');
+        }
+    }
+
+    // حل التنبيه
+    function resolveAlert(alertId) {
+        if (confirm('هل أنت متأكد من حل هذا التنبيه؟')) {
+            const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+            if (alertElement) {
+                alertElement.style.opacity = '0.5';
+                alertElement.style.borderLeftColor = '#27ae60';
+                showNotification('تم حل التنبيه', 'success');
+            }
+        }
+    }
+
+    // عرض تفاصيل التنبيه
+    function viewAlertDetails(alertId) {
+        currentAlertId = alertId;
+        const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+        if (alertElement) {
+            const title = alertElement.querySelector('.alert-title').textContent;
+            const message = alertElement.querySelector('.alert-message').textContent;
+            const time = alertElement.querySelector('.alert-time').textContent;
+            const type = alertElement.getAttribute('data-alert-type');
+            
+            const content = `
+                <div class="alert-details-content">
+                    <h4>${title}</h4>
+                    <p><strong>الرسالة:</strong> ${message}</p>
+                    <p><strong>الوقت:</strong> ${time}</p>
+                    <p><strong>النوع:</strong> ${type === 'critical' ? 'حرج' : type === 'warning' ? 'تحذير' : 'معلومات'}</p>
+                </div>
+            `;
+            
+            document.getElementById('alert-details-content').innerHTML = content;
+            document.getElementById('alert-details-modal').style.display = 'flex';
+        }
+    }
+
+    // تأكيد التنبيه الحالي
+    function acknowledgeCurrentAlert() {
+        if (currentAlertId) {
+            acknowledgeAlert(currentAlertId);
+            closeModal('alert-details-modal');
+        }
+    }
+
+    // حذف التنبيه
+    function deleteAlert(alertId) {
+        if (confirm('هل أنت متأكد من حذف هذا التنبيه؟')) {
+            const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+            if (alertElement) {
+                alertElement.style.opacity = '0';
+                setTimeout(() => alertElement.remove(), 300);
+                showNotification('تم حذف التنبيه', 'success');
+            }
+        }
+    }
+
+    // إغلاق النافذة
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    // مسح الفلاتر
+    function clearFilters() {
+        document.getElementById('type-filter').value = '';
+        document.getElementById('status-filter').value = '';
+        document.getElementById('device-filter').value = '';
+        document.getElementById('date-filter').value = '';
+        showNotification('تم مسح جميع الفلاتر', 'info');
+    }
+
+    // متغير لتتبع التنبيهات المعروضة
+    let displayedAlertIds = new Set();
+    
+    // دالة تشغيل الصوت
+    function playAlertSound(severity) {
+        try {
+            // محاولة تشغيل ملف الصوت إذا كان موجوداً
+            const audio = new Audio('/static/security-alarm.mp3');
+            audio.volume = 0.8;
+            audio.play().catch(e => {
+                console.log('لا يمكن تشغيل ملف الصوت، استخدام صوت افتراضي');
+                // استخدام صوت افتراضي
+                playDefaultSound(severity);
+            });
+        } catch (e) {
+            // استخدام صوت افتراضي
+            playDefaultSound(severity);
+        }
+    }
+    
+    // دالة تشغيل صوت افتراضي
+    function playDefaultSound(severity) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (severity === 'critical') {
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+                setTimeout(() => {
+                    const oscillator2 = audioContext.createOscillator();
+                    const gainNode2 = audioContext.createGain();
+                    oscillator2.connect(gainNode2);
+                    gainNode2.connect(audioContext.destination);
+                    oscillator2.frequency.value = 1000;
+                    oscillator2.type = 'sine';
+                    gainNode2.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator2.start(audioContext.currentTime);
+                    oscillator2.stop(audioContext.currentTime + 0.5);
+                }, 200);
+            } else {
+                oscillator.frequency.value = 600;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }
+        } catch (error) {
+            console.error('خطأ في تشغيل الصوت:', error);
+        }
+    }
+    
+    // تحميل التنبيهات من API
+    function loadAlerts() {
+        const statusFilter = document.getElementById('status-filter')?.value || 'all';
+        const severityFilter = document.getElementById('type-filter')?.value || 'all';
+        const deviceFilter = document.getElementById('device-filter')?.value || '';
+        
+        let url = '/alerts/api?';
+        if (statusFilter && statusFilter !== 'all') url += `status=${statusFilter}&`;
+        if (severityFilter && severityFilter !== 'all') url += `severity=${severityFilter}&`;
+        if (deviceFilter) url += `device=${encodeURIComponent(deviceFilter)}&`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error('خطأ في تحميل التنبيهات:', data.error);
+                    showNotification('خطأ في تحميل التنبيهات', 'error');
+                    return;
+                }
+                
+                // التحقق من التنبيهات الجديدة
+                const currentAlertIds = new Set(data.map(a => a.id));
+                const newAlerts = data.filter(alert => !displayedAlertIds.has(alert.id));
+                
+                // تشغيل الصوت للتنبيهات الجديدة الحرجة والتحذيرية
+                newAlerts.forEach(alert => {
+                    if ((alert.severity === 'critical' || alert.severity === 'warning') && alert.status === 'active') {
+                        console.log('🔔 تنبيه جديد:', alert.message);
+                        playAlertSound(alert.severity);
+                    }
+                    displayedAlertIds.add(alert.id);
+                });
+                
+                // إزالة التنبيهات المحذوفة من القائمة
+                displayedAlertIds.forEach(alertId => {
+                    if (!currentAlertIds.has(alertId)) {
+                        displayedAlertIds.delete(alertId);
+                    }
+                });
+                
+                // تحديث الإحصائيات
+                updateStats(data);
+                
+                // عرض التنبيهات
+                displayAlerts(data);
+                
+                // تحديث قائمة الأجهزة في الفلتر
+                updateDeviceFilter(data);
+            })
+            .catch(error => {
+                console.error('خطأ في تحميل التنبيهات:', error);
+                showNotification('خطأ في تحميل التنبيهات', 'error');
+            });
+    }
+    
+    // تحديث الإحصائيات
+    function updateStats(alerts) {
+        const total = alerts.length;
+        const critical = alerts.filter(a => a.severity === 'critical').length;
+        const warning = alerts.filter(a => a.severity === 'warning').length;
+        const resolved = alerts.filter(a => a.status === 'resolved').length;
+        
+        document.getElementById('total-alerts').textContent = total;
+        document.getElementById('critical-alerts').textContent = critical;
+        document.getElementById('warning-alerts').textContent = warning;
+        document.getElementById('resolved-alerts').textContent = resolved;
+    }
+    
+    // عرض التنبيهات
+    function displayAlerts(alerts) {
+        const listView = document.getElementById('list-view');
+        const timelineView = document.getElementById('timeline-view');
+        
+        if (alerts.length === 0) {
+            listView.innerHTML = `
+                <div class="no-alerts">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>لا توجد تنبيهات</h3>
+                    <p>جميع الأجهزة تعمل بشكل طبيعي</p>
+                </div>
+            `;
+            timelineView.innerHTML = `
+                <div class="no-alerts">
+                    <i class="fas fa-check-circle"></i>
+                    <h3>لا توجد تنبيهات</h3>
+                    <p>جميع الأجهزة تعمل بشكل طبيعي</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // عرض القائمة
+        listView.innerHTML = alerts.map(alert => `
+            <div class="alert-item alert-${alert.severity}" 
+                 data-alert-id="${alert.id}" 
+                 data-alert-type="${alert.severity}" 
+                 data-alert-status="${alert.status}">
+                <div class="alert-icon">
+                    <i class="fas fa-${alert.severity === 'critical' ? 'exclamation-circle' : alert.severity === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                </div>
+                
+                <div class="alert-content">
+                    <div class="alert-header">
+                        <h3 class="alert-title">${alert.device_name || 'جهاز غير معروف'}</h3>
+                        <div class="alert-meta">
+                            <span class="alert-type type-${alert.severity}">
+                                ${alert.severity === 'critical' ? 'حرج' : alert.severity === 'warning' ? 'تحذير' : 'معلومات'}
+                            </span>
+                            <span class="alert-time">
+                                <i class="fas fa-clock"></i>
+                                ${formatDate(alert.created_at)}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert-message">
+                        ${alert.message}
+                        ${alert.alert_type === 'emergency_alert' ? `
+                        <div class="mt-2" style="padding: 8px; background: rgba(255,255,255,0.1); border-radius: 5px; font-size: 0.85em;">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>تنبيه طارئ:</strong> تم إرساله من الإدارة
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div class="alert-details">
+                        <div class="detail-item">
+                            <span class="detail-label">الجهاز:</span>
+                            <span class="detail-value">${alert.device_name || 'غير معروف'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">الموقع:</span>
+                            <span class="detail-value">${alert.device_location || 'غير محدد'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">الحالة:</span>
+                            <span class="detail-value status-${alert.status}">
+                                ${alert.status === 'active' ? 'نشط' : alert.status === 'acknowledged' ? 'مؤكد' : 'محلول'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert-actions">
+                    ${alert.status === 'active' ? `
+                    <button class="btn btn-primary btn-sm" onclick="acknowledgeAlert(${alert.id})">
+                        <i class="fas fa-check"></i>
+                        تأكيد
+                    </button>
+                    ` : ''}
+                    <button class="btn btn-success btn-sm" onclick="resolveAlert(${alert.id})">
+                        <i class="fas fa-check-double"></i>
+                        حل
+                    </button>
+                    <button class="btn btn-warning btn-sm" onclick="viewAlertDetails(${alert.id})">
+                        <i class="fas fa-eye"></i>
+                        تفاصيل
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAlert(${alert.id})">
+                        <i class="fas fa-trash"></i>
+                        حذف
+                    </button>
+                </div>
+            </div>
+        `).join('');
+        
+        // عرض الجدول الزمني
+        timelineView.innerHTML = `
+            <div class="timeline">
+                ${alerts.map(alert => `
+                    <div class="timeline-item alert-${alert.severity}" data-alert-id="${alert.id}">
+                        <div class="timeline-marker">
+                            <i class="fas fa-${alert.severity === 'critical' ? 'exclamation-circle' : alert.severity === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <h4>${alert.device_name || 'جهاز غير معروف'}</h4>
+                                <span class="timeline-time">${formatDate(alert.created_at)}</span>
+                            </div>
+                            <div class="timeline-message">${alert.message}</div>
+                            <div class="timeline-actions">
+                                ${alert.status === 'active' ? `
+                                <button class="btn btn-primary btn-sm" onclick="acknowledgeAlert(${alert.id})">
+                                    <i class="fas fa-check"></i>
+                                    تأكيد
+                                </button>
+                                ` : ''}
+                                <button class="btn btn-success btn-sm" onclick="resolveAlert(${alert.id})">
+                                    <i class="fas fa-check-double"></i>
+                                    حل
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    // تحديث قائمة الأجهزة في الفلتر
+    function updateDeviceFilter(alerts) {
+        const deviceFilter = document.getElementById('device-filter');
+        if (!deviceFilter) return;
+        
+        // جلب قائمة الأجهزة من API
+        fetch('/alerts/api/devices')
+            .then(response => response.json())
+            .then(devices => {
+                if (devices.error) {
+                    // إذا فشل، نستخدم الأجهزة من التنبيهات
+                    const deviceNames = [...new Set(alerts.map(a => a.device_name).filter(Boolean))];
+                    const currentValue = deviceFilter.value;
+                    deviceFilter.innerHTML = '<option value="">جميع الأجهزة</option>' + 
+                        deviceNames.map(device => `<option value="${device}">${device}</option>`).join('');
+                    if (currentValue && deviceNames.includes(currentValue)) {
+                        deviceFilter.value = currentValue;
+                    }
+                    return;
+                }
+                
+                const currentValue = deviceFilter.value;
+                deviceFilter.innerHTML = '<option value="">جميع الأجهزة</option>' + 
+                    devices.map(device => `<option value="${device.name}">${device.name}</option>`).join('');
+                
+                if (currentValue && devices.some(d => d.name === currentValue)) {
+                    deviceFilter.value = currentValue;
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في جلب الأجهزة:', error);
+                // استخدام الأجهزة من التنبيهات كبديل
+                const deviceNames = [...new Set(alerts.map(a => a.device_name).filter(Boolean))];
+                const currentValue = deviceFilter.value;
+                deviceFilter.innerHTML = '<option value="">جميع الأجهزة</option>' + 
+                    deviceNames.map(device => `<option value="${device}">${device}</option>`).join('');
+                if (currentValue && deviceNames.includes(currentValue)) {
+                    deviceFilter.value = currentValue;
+                }
+            });
+    }
+    
+    // تنسيق التاريخ
+    function formatDate(dateString) {
+        if (!dateString) return 'غير محدد';
+        const date = new Date(dateString);
+        return date.toLocaleString('ar-SA', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    // تأكيد تنبيه (API)
+    function acknowledgeAlert(alertId) {
+        fetch(`/alerts/api/${alertId}/acknowledge`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('تم تأكيد التنبيه', 'success');
+                loadAlerts(); // إعادة تحميل التنبيهات
+            } else {
+                showNotification(data.error || 'فشل تأكيد التنبيه', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في تأكيد التنبيه:', error);
+            showNotification('خطأ في تأكيد التنبيه', 'error');
+        });
+    }
+    
+    // حل تنبيه (API)
+    function resolveAlert(alertId) {
+        if (!confirm('هل أنت متأكد من حل هذا التنبيه؟')) return;
+        
+        fetch(`/alerts/api/${alertId}/resolve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('تم حل التنبيه', 'success');
+                loadAlerts(); // إعادة تحميل التنبيهات
+            } else {
+                showNotification(data.error || 'فشل حل التنبيه', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في حل التنبيه:', error);
+            showNotification('خطأ في حل التنبيه', 'error');
+        });
+    }
+    
+    // عرض تفاصيل التنبيه (API)
+    function viewAlertDetails(alertId) {
+        fetch('/alerts/api')
+            .then(response => response.json())
+            .then(alerts => {
+                const alert = alerts.find(a => a.id === alertId);
+                if (!alert) {
+                    showNotification('التنبيه غير موجود', 'error');
+                    return;
+                }
+                
+                currentAlertId = alertId;
+                const content = `
+                    <div class="alert-details-content">
+                        <h4>${alert.device_name || 'جهاز غير معروف'}</h4>
+                        <p><strong>الرسالة:</strong> ${alert.message}</p>
+                        <p><strong>النوع:</strong> ${alert.alert_type || 'غير محدد'}</p>
+                        <p><strong>الأهمية:</strong> ${alert.severity === 'critical' ? 'حرج' : alert.severity === 'warning' ? 'تحذير' : 'معلومات'}</p>
+                        <p><strong>الحالة:</strong> ${alert.status === 'active' ? 'نشط' : alert.status === 'acknowledged' ? 'مؤكد' : 'محلول'}</p>
+                        <p><strong>الوقت:</strong> ${formatDate(alert.created_at)}</p>
+                        ${alert.acknowledged_by_username ? `<p><strong>مؤكد بواسطة:</strong> ${alert.acknowledged_by_username}</p>` : ''}
+                        ${alert.acknowledged_at ? `<p><strong>وقت التأكيد:</strong> ${formatDate(alert.acknowledged_at)}</p>` : ''}
+                        ${alert.resolved_at ? `<p><strong>وقت الحل:</strong> ${formatDate(alert.resolved_at)}</p>` : ''}
+                    </div>
+                `;
+                
+                document.getElementById('alert-details-content').innerHTML = content;
+                document.getElementById('alert-details-modal').style.display = 'flex';
+            })
+            .catch(error => {
+                console.error('خطأ في تحميل تفاصيل التنبيه:', error);
+                showNotification('خطأ في تحميل تفاصيل التنبيه', 'error');
+            });
+    }
+    
+    // حذف تنبيه
+    function deleteAlert(alertId) {
+        if (!confirm('هل أنت متأكد من حذف هذا التنبيه؟')) return;
+        
+        // يمكن إضافة API endpoint لحذف التنبيهات لاحقاً
+        const alertElement = document.querySelector(`[data-alert-id="${alertId}"]`);
+        if (alertElement) {
+            alertElement.style.opacity = '0';
+            setTimeout(() => {
+                alertElement.remove();
+                loadAlerts(); // إعادة تحميل للتحقق من التحديث
+            }, 300);
+            showNotification('تم حذف التنبيه', 'success');
+        }
+    }
+    
+    // تأكيد جميع التنبيهات
+    function markAllAsRead() {
+        if (!confirm('هل أنت متأكد من تأكيد جميع التنبيهات النشطة؟')) return;
+        
+        fetch('/alerts/api?status=active')
+            .then(response => response.json())
+            .then(alerts => {
+                const activeAlerts = alerts.filter(a => a.status === 'active');
+                let completed = 0;
+                
+                activeAlerts.forEach(alert => {
+                    fetch(`/alerts/api/${alert.id}/acknowledge`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    })
+                    .then(() => completed++)
+                    .catch(() => {});
+                });
+                
+                setTimeout(() => {
+                    showNotification(`تم تأكيد ${completed} تنبيه`, 'success');
+                    loadAlerts();
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('خطأ في تأكيد التنبيهات:', error);
+                showNotification('خطأ في تأكيد التنبيهات', 'error');
+            });
+    }
+    
+    // مسح جميع التنبيهات المحلولة
+    function clearAllAlerts() {
+        if (!confirm('هل أنت متأكد من حذف جميع التنبيهات المحلولة؟')) return;
+        showNotification('تم مسح التنبيهات المحلولة', 'success');
+        loadAlerts();
+    }
+    
+    // إعداد فلاتر البحث
+    document.addEventListener('DOMContentLoaded', function() {
+        // تحميل التنبيهات عند تحميل الصفحة
+        loadAlerts();
+        
+        // تحديث تلقائي كل 5 ثوانٍ للتنبيهات الجديدة (أسرع)
+        setInterval(loadAlerts, 5000);
+        
+        // زر التحديث
+        const refreshBtn = document.getElementById('refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                loadAlerts();
+                showNotification('تم تحديث التنبيهات', 'info');
+            });
+        }
+        
+        const typeFilter = document.getElementById('type-filter');
+        const statusFilter = document.getElementById('status-filter');
+        const deviceFilter = document.getElementById('device-filter');
+        const dateFilter = document.getElementById('date-filter');
+
+        function applyFilters() {
+            loadAlerts(); // إعادة تحميل مع الفلاتر
+        }
+
+        if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+        if (deviceFilter) deviceFilter.addEventListener('change', applyFilters);
+        if (dateFilter) dateFilter.addEventListener('change', applyFilters);
+        
+        // تحميل قائمة الأجهزة عند تحميل الصفحة
+        loadDevicesForFilter();
+    });
+    
+    // تحميل قائمة الأجهزة للفلتر
+    function loadDevicesForFilter() {
+        fetch('/alerts/api/devices')
+            .then(response => response.json())
+            .then(devices => {
+                if (devices.error) {
+                    console.error('خطأ في جلب الأجهزة:', devices.error);
+                    return;
+                }
+                
+                const deviceFilter = document.getElementById('device-filter');
+                if (deviceFilter) {
+                    const currentValue = deviceFilter.value;
+                    deviceFilter.innerHTML = '<option value="">جميع الأجهزة</option>' + 
+                        devices.map(device => `<option value="${device.name}">${device.name}</option>`).join('');
+                    
+                    if (currentValue && devices.some(d => d.name === currentValue)) {
+                        deviceFilter.value = currentValue;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('خطأ في جلب الأجهزة:', error);
+            });
+    }
+    
+    // دالة عرض الإشعارات
+    function showNotification(message, type = 'info') {
+        // يمكن استخدام مكتبة إشعارات أو إنشاء إشعار بسيط
+        alert(message);
+    }
+</script>
+{% endblock %}
+

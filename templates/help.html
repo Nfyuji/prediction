@@ -1,0 +1,772 @@
+{% extends "base.html" %}
+
+{% block title %}المساعدة والدعم - نظام مراقبة الأجهزة{% endblock %}
+
+{% block content %}
+<div class="help-page">
+    <!-- شريط التنقل السريع -->
+    <div class="quick-nav mb-4">
+        <div class="card">
+            <div class="card-body">
+                <nav class="breadcrumb-nav">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('dashboard.index') }}" class="breadcrumb-link">
+                                <i class="fas fa-home"></i>
+                                الرئيسية
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <i class="fas fa-question-circle"></i>
+                            المساعدة
+                        </li>
+                    </ol>
+                </nav>
+                
+                <!-- روابط سريعة -->
+                <div class="quick-links mt-3">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('dashboard.index') }}" class="quick-link-card">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>لوحة التحكم</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('devices.devices_list') }}" class="quick-link-card">
+                                <i class="fas fa-desktop"></i>
+                                <span>الأجهزة</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('alerts.alerts_list') }}" class="quick-link-card">
+                                <i class="fas fa-bell"></i>
+                                <span>التنبيهات</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('reports') }}" class="quick-link-card">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>التقارير</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- رأس الصفحة -->
+    <div class="page-header">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="page-title">
+                            <i class="fas fa-question-circle"></i>
+                            المساعدة والدعم الفني
+                        </h1>
+                        <p class="page-subtitle">دليل المستخدم والدعم الفني الشامل</p>
+                    </div>
+                    <div class="page-actions">
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-tachometer-alt"></i>
+                            لوحة التحكم
+                        </a>
+                        <a href="{{ url_for('devices.devices_list') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-desktop"></i>
+                            الأجهزة
+                        </a>
+                        <a href="{{ url_for('alerts.alerts_list') }}" class="btn btn-outline-info">
+                            <i class="fas fa-bell"></i>
+                            التنبيهات
+                        </a>
+                        <a href="{{ url_for('analytics.analytics_page') }}" class="btn btn-outline-success">
+                            <i class="fas fa-chart-line"></i>
+                            التحليلات المتقدمة
+                        </a>
+                        <button class="btn btn-primary" onclick="searchHelp()">
+                            <i class="fas fa-search"></i>
+                            بحث في المساعدة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- شريط البحث -->
+    <div class="search-section mb-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="search-container">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="help-search" placeholder="ابحث في المساعدة...">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" onclick="searchHelp()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- أقسام المساعدة -->
+    <div class="help-sections">
+        <!-- دليل المستخدم -->
+        <div class="help-section mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-book"></i>
+                        دليل المستخدم
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="help-item">
+                                <h5><i class="fas fa-play-circle"></i> البدء السريع</h5>
+                                <p>تعلم كيفية استخدام النظام بسرعة وفعالية</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="showHelpContent('quick-start')">عرض الدليل</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="help-item">
+                                <h5><i class="fas fa-desktop"></i> إدارة الأجهزة</h5>
+                                <p>كيفية إضافة وإدارة الأجهزة في النظام</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="showHelpContent('devices')">عرض الدليل</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="help-item">
+                                <h5><i class="fas fa-bell"></i> التنبيهات</h5>
+                                <p>فهم وإدارة نظام التنبيهات</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="showHelpContent('alerts')">عرض الدليل</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="help-item">
+                                <h5><i class="fas fa-chart-bar"></i> التقارير</h5>
+                                <p>إنشاء وتصدير التقارير المختلفة</p>
+                                <a href="#" class="btn btn-sm btn-outline-primary" onclick="showHelpContent('reports')">عرض الدليل</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الأسئلة الشائعة -->
+        <div class="help-section mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-question-circle"></i>
+                        الأسئلة الشائعة
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="faq-container">
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                <h5>كيف يمكنني إضافة جهاز جديد؟</h5>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>يمكنك إضافة جهاز جديد من خلال صفحة الأجهزة بالضغط على زر "إضافة جهاز" وملء البيانات المطلوبة.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                <h5>كيف يمكنني تخصيص التنبيهات؟</h5>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>يمكنك تخصيص التنبيهات من خلال صفحة الإعدادات حيث يمكنك تحديد أنواع التنبيهات المطلوبة.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                <h5>كيف يمكنني تصدير التقارير؟</h5>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>يمكنك تصدير التقارير بصيغ مختلفة (PDF, Excel) من صفحة التقارير.</p>
+                            </div>
+                        </div>
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFAQ(this)">
+                                <h5>كيف يمكنني تغيير كلمة المرور؟</h5>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-answer">
+                                <p>يمكنك تغيير كلمة المرور من خلال صفحة الملف الشخصي.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- دعم فني -->
+        <div class="help-section mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-headset"></i>
+                        الدعم الفني
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="support-item">
+                                <div class="support-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <h5>الدعم الهاتفي</h5>
+                                <p>+966 50 123 4567</p>
+                                <small>24/7 متاح</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="support-item">
+                                <div class="support-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <h5>البريد الإلكتروني</h5>
+                                <p>support@itsystem.com</p>
+                                <small>رد خلال 24 ساعة</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="support-item">
+                                <div class="support-icon">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <h5>الدردشة المباشرة</h5>
+                                <p>متاحة الآن</p>
+                                <button class="btn btn-sm btn-primary" onclick="startChat()">بدء المحادثة</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تواصل معنا -->
+        <div class="help-section mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="section-title">
+                        <i class="fas fa-envelope"></i>
+                        تواصل معنا
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <form class="contact-form">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">الاسم</label>
+                                        <input type="text" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">البريد الإلكتروني</label>
+                                        <input type="email" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">الموضوع</label>
+                                    <select class="form-control">
+                                        <option>استفسار عام</option>
+                                        <option>مشكلة تقنية</option>
+                                        <option>طلب ميزة جديدة</option>
+                                        <option>شكوى</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">الرسالة</label>
+                                    <textarea class="form-control" rows="5" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                    إرسال الرسالة
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="contact-info">
+                                <h5>معلومات التواصل</h5>
+                                <div class="contact-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <div>
+                                        <strong>العنوان:</strong><br>
+                                        الرياض، المملكة العربية السعودية
+                                    </div>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-phone"></i>
+                                    <div>
+                                        <strong>الهاتف:</strong><br>
+                                        +966 11 123 4567
+                                    </div>
+                                </div>
+                                <div class="contact-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <div>
+                                        <strong>البريد الإلكتروني:</strong><br>
+                                        info@itsystem.com
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .help-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    /* شريط التنقل السريع */
+    .quick-nav .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        box-shadow: var(--glass-shadow);
+    }
+
+    .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-link {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    .breadcrumb-item.active {
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    /* الروابط السريعة */
+    .quick-links {
+        margin-top: 1rem;
+    }
+
+    .quick-link-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem;
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quick-link-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-gradient);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .quick-link-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .quick-link-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 35px rgba(31, 38, 135, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .quick-link-card i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        transition: all 0.3s ease;
+    }
+
+    .quick-link-card:hover i {
+        transform: scale(1.1);
+    }
+
+    .quick-link-card span {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    /* أزرار التنقل */
+    .btn-outline-primary {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-outline-primary:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-outline-warning {
+        background: transparent;
+        color: var(--warning);
+        border: 2px solid var(--warning);
+    }
+
+    .btn-outline-warning:hover {
+        background: var(--warning);
+        color: white;
+    }
+
+    .btn-outline-info {
+        background: transparent;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
+    }
+
+    .btn-outline-info:hover {
+        background: #17a2b8;
+        color: white;
+    }
+
+    /* أقسام المساعدة */
+    .help-section .card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 25px;
+        box-shadow: var(--glass-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .help-section .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(31, 38, 135, 0.5);
+    }
+
+    .section-title {
+        color: white;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0;
+    }
+
+    .section-title i {
+        background: var(--primary-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* عناصر المساعدة */
+    .help-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .help-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-3px);
+    }
+
+    .help-item h5 {
+        color: white;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .help-item h5 i {
+        color: var(--primary);
+    }
+
+    .help-item p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 1rem;
+    }
+
+    /* الأسئلة الشائعة */
+    .faq-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .faq-question {
+        padding: 1.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .faq-question:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .faq-question h5 {
+        color: white;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .faq-question i {
+        color: var(--primary);
+        transition: transform 0.3s ease;
+    }
+
+    .faq-item.active .faq-question i {
+        transform: rotate(180deg);
+    }
+
+    .faq-answer {
+        padding: 0 1.5rem 1.5rem;
+        color: rgba(255, 255, 255, 0.8);
+        display: none;
+    }
+
+    .faq-item.active .faq-answer {
+        display: block;
+    }
+
+    /* الدعم الفني */
+    .support-item {
+        text-align: center;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .support-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+    }
+
+    .support-icon {
+        font-size: 3rem;
+        color: var(--primary);
+        margin-bottom: 1rem;
+    }
+
+    .support-item h5 {
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .support-item p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0.5rem;
+    }
+
+    .support-item small {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* نموذج التواصل */
+    .contact-form .form-label {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .contact-form .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 10px;
+    }
+
+    .contact-form .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        color: white;
+    }
+
+    .contact-form .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* معلومات التواصل */
+    .contact-info {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 2rem;
+    }
+
+    .contact-info h5 {
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-item i {
+        color: var(--primary);
+        font-size: 1.2rem;
+        margin-top: 0.25rem;
+    }
+
+    .contact-item div {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .contact-item strong {
+        color: white;
+    }
+
+    /* شريط البحث */
+    .search-container .form-control {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 10px 0 0 10px;
+    }
+
+    .search-container .form-control:focus {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        color: white;
+    }
+
+    .search-container .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+</style>
+{% endblock %}
+
+<script>
+    // تبديل الأسئلة الشائعة
+    function toggleFAQ(element) {
+        const faqItem = element.parentElement;
+        faqItem.classList.toggle('active');
+    }
+
+    // البحث في المساعدة
+    function searchHelp() {
+        const searchTerm = document.getElementById('help-search').value;
+        if (searchTerm.trim()) {
+            showNotification('جاري البحث عن: ' + searchTerm, 'info');
+            // يمكن إضافة منطق البحث هنا
+        }
+    }
+
+    // عرض محتوى المساعدة
+    function showHelpContent(type) {
+        const content = {
+            'quick-start': 'دليل البدء السريع...',
+            'devices': 'دليل إدارة الأجهزة...',
+            'alerts': 'دليل التنبيهات...',
+            'reports': 'دليل التقارير...'
+        };
+        
+        showNotification('عرض دليل: ' + type, 'info');
+    }
+
+    // بدء المحادثة
+    function startChat() {
+        showNotification('جاري بدء المحادثة مع الدعم الفني...', 'info');
+    }
+
+    // إرسال نموذج التواصل
+    document.querySelector('.contact-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        showNotification('تم إرسال رسالتك بنجاح!', 'success');
+        this.reset();
+    });
+
+    // دالة عرض الإشعارات
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} alert-dismissible fade show`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            ${message}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+</script>
+{% endblock %}

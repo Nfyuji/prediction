@@ -1,0 +1,2334 @@
+{% extends "base.html" %}
+
+{% block title %}إدارة الأجهزة - نظام مراقبة الأجهزة{% endblock %}
+
+{% block content %}
+<div class="devices-page">
+    <!-- شريط التنقل السريع -->
+    <div class="quick-nav mb-4">
+        <div class="card">
+            <div class="card-body">
+                <nav class="breadcrumb-nav">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('dashboard.index') }}" class="breadcrumb-link">
+                                <i class="fas fa-home"></i>
+                                الرئيسية
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active">
+                            <i class="fas fa-desktop"></i>
+                            إدارة الأجهزة
+                        </li>
+                    </ol>
+                </nav>
+                
+                <!-- روابط سريعة -->
+                <div class="quick-links mt-3">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('dashboard.index') }}" class="quick-link-card">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>لوحة التحكم</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('alerts.alerts_list') }}" class="quick-link-card">
+                                <i class="fas fa-bell"></i>
+                                <span>التنبيهات</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('reports') }}" class="quick-link-card">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>التقارير</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('analytics.analytics_page') }}" class="quick-link-card">
+                                <i class="fas fa-chart-line"></i>
+                                <span>التحليلات المتقدمة</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6 mb-2">
+                            <a href="{{ url_for('help') }}" class="quick-link-card">
+                                <i class="fas fa-question-circle"></i>
+                                <span>المساعدة</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --dark: #1e1e2c;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e1e2c 0%, #2d2d44 100%);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .devices-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* شريط التنقل السريع */
+        .quick-nav .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb-link:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* الروابط السريعة */
+        .quick-links {
+            margin-top: 1rem;
+        }
+
+        .quick-link-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .quick-link-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .quick-link-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(31, 38, 135, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .quick-link-card i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: var(--transition);
+        }
+
+        .quick-link-card:hover i {
+            transform: scale(1.1);
+        }
+
+        .quick-link-card span {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* تأثير الجسيمات الخلفية */
+        .particles-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* رأس الصفحة */
+        .page-header {
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .page-header .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page-header .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(67, 97, 238, 0.1) 0%, rgba(114, 9, 183, 0.1) 100%);
+            z-index: -1;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 50%, #7209b7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.6);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #05b38c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(6, 214, 160, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(6, 214, 160, 0.6);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        .btn-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(23, 162, 184, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #d63031 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 71, 111, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(239, 71, 111, 0.6);
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-outline-warning {
+            background: transparent;
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+
+        .btn-outline-warning:hover {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-outline-info {
+            background: transparent;
+            color: #17a2b8;
+            border: 2px solid #17a2b8;
+        }
+
+        .btn-outline-info:hover {
+            background: #17a2b8;
+            color: white;
+        }
+
+        /* فلاتر البحث */
+        .filters-section {
+            margin-bottom: 2rem;
+        }
+
+        .filters-section .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control {
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+
+        /* إحصائيات سريعة */
+        .quick-stats {
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--glass-shadow);
+            padding: 1.5rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        /* بطاقات الأجهزة */
+        .devices-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .device-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            position: relative;
+            border-left: 4px solid transparent;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: var(--transition);
+        }
+
+        .device-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(31, 38, 135, 0.5);
+        }
+
+        .device-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .device-card.warning::before {
+            background: linear-gradient(90deg, var(--warning), #ff9e00);
+        }
+
+        .device-card.critical {
+            border-left-color: var(--danger);
+        }
+
+        .device-card.critical::before {
+            background: linear-gradient(90deg, var(--danger), #d90429);
+        }
+
+        .device-card.healthy::before {
+            background: linear-gradient(90deg, var(--success), #04a777);
+        }
+
+        .device-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .device-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: deviceIconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes deviceIconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .device-status-badge .status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-healthy {
+            background: rgba(6, 214, 160, 0.2);
+            color: var(--success);
+            border: 1px solid rgba(6, 214, 160, 0.3);
+        }
+
+        .status-warning {
+            background: rgba(255, 209, 102, 0.2);
+            color: var(--warning);
+            border: 1px solid rgba(255, 209, 102, 0.3);
+        }
+
+        .status-critical {
+            background: rgba(239, 71, 111, 0.2);
+            color: var(--danger);
+            border: 1px solid rgba(239, 71, 111, 0.3);
+        }
+
+        .device-card-body {
+            padding: 2rem;
+        }
+
+        .device-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .device-location {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .device-metrics {
+            margin-bottom: 1rem;
+        }
+
+        .metric-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .metric-value {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 15px;
+            transition: width 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .progress-bar-warning {
+            background: linear-gradient(90deg, var(--warning), #ff9e00);
+        }
+
+        .progress-bar-danger {
+            background: linear-gradient(90deg, var(--danger), #d90429);
+        }
+
+        .device-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .device-card-footer {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn-sm {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* النوافذ المنبثقة */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { 
+                transform: translateY(-50px) scale(0.9);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: white;
+        }
+
+        .modal-header .close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            transition: var(--transition);
+        }
+
+        .modal-header .close:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .action-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* إشعارات */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10001;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, var(--success), #05b38c);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--danger), #d90429);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        }
+
+        /* التكيف مع الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .devices-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-actions {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .device-card-footer {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- تأثير الجسيمات الخلفية -->
+    <div class="particles-background" id="particles"></div>
+
+    <div class="devices-page">
+        <!-- رأس الصفحة -->
+        <div class="page-header">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="page-title">
+                                <i class="fas fa-laptop"></i>
+                                إدارة الأجهزة
+                            </h1>
+                            <p class="page-subtitle">مراقبة وإدارة جميع الأجهزة المتصلة بالنظام</p>
+                        </div>
+                        <div class="page-actions">
+                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-tachometer-alt"></i>
+                                لوحة التحكم
+                            </a>
+                            <a href="{{ url_for('alerts.alerts_list') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-bell"></i>
+                                التنبيهات
+                            </a>
+                            <a href="{{ url_for('reports') }}" class="btn btn-outline-info">
+                                <i class="fas fa-chart-bar"></i>
+                                التقارير
+                            </a>
+                            <button class="btn btn-primary" id="refresh-btn" data-action="refresh">
+                                <i class="fas fa-sync-alt"></i>
+                                تحديث
+                            </button>
+                            <button class="btn btn-success" onclick="showAddDeviceModal()">
+                                <i class="fas fa-plus"></i>
+                                إضافة جهاز
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلاتر البحث -->
+        <div class="filters-section">
+            <div class="card">
+                <div class="card-body">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="status-filter" class="filter-label">
+                                <i class="fas fa-filter"></i>
+                                فلتر حسب الحالة
+                            </label>
+                            <select id="status-filter" class="form-control">
+                                <option value="">جميع الحالات</option>
+                                <option value="healthy">سليم</option>
+                                <option value="warning">تحذير</option>
+                                <option value="critical">حرج</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="location-filter" class="filter-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                فلتر حسب الموقع
+                            </label>
+                            <select id="location-filter" class="form-control">
+                                <option value="">جميع المواقع</option>
+                                <option value="مختبر الحاسوب">مختبر الحاسوب</option>
+                                <option value="مكتب الإدارة">مكتب الإدارة</option>
+                                <option value="قاعة المحاضرات">قاعة المحاضرات</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="search-input" class="filter-label">
+                                <i class="fas fa-search"></i>
+                                البحث
+                            </label>
+                            <input type="text" id="search-input" class="form-control" placeholder="البحث عن جهاز...">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <button class="btn btn-outline-primary" onclick="clearFilters()">
+                                <i class="fas fa-times"></i>
+                                مسح الفلاتر
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- إحصائيات سريعة -->
+        <div class="quick-stats">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <div class="stat-number" id="total-devices-count">12</div>
+                    <div class="stat-label">إجمالي الأجهزة</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number" id="healthy-count">8</div>
+                    <div class="stat-label">سليمة</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-number" id="warning-count">3</div>
+                    <div class="stat-label">تحذيرية</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="stat-number" id="critical-count">1</div>
+                    <div class="stat-label">حرجة</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- جدول الأجهزة -->
+        <div class="devices-table-section">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="card-title">
+                            <i class="fas fa-list"></i>
+                            قائمة الأجهزة
+                        </h2>
+                        <div class="table-actions">
+                            <button class="btn btn-outline-primary" onclick="exportDevices()">
+                                <i class="fas fa-download"></i>
+                                تصدير
+                            </button>
+                            <div class="view-toggle">
+                                <button class="btn btn-outline-primary active" id="grid-view-btn" onclick="toggleView('grid')">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="btn btn-outline-primary" id="list-view-btn" onclick="toggleView('list')">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- عرض الشبكة -->
+                    <div id="grid-view" class="devices-grid">
+                        <!-- سيتم إضافة بطاقات الأجهزة ديناميكيًا -->
+                    </div>
+                    
+                    <!-- عرض القائمة -->
+                    <div id="list-view" class="devices-list" style="display: none;">
+                        <table class="devices-table">
+                            <thead>
+                                <tr>
+                                    <th>اسم الجهاز</th>
+                                    <th>الموقع</th>
+                                    <th>الحالة</th>
+                                    <th>CPU</th>
+                                    <th>RAM</th>
+                                    <th>Disk</th>
+                                    <th>Temperature</th>
+                                    <th>Battery</th>
+                                    <th>آخر تحديث</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devices-table-body">
+                                <!-- سيتم إضافة صفوف الأجهزة ديناميكيًا -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إضافة جهاز -->
+    <div id="add-device-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة جهاز جديد</h3>
+                <button class="close" onclick="closeModal('add-device-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-device-form">
+                    <div class="form-group">
+                        <label for="device-name">اسم الجهاز <span class="required">*</span></label>
+                        <input type="text" id="device-name" class="form-control" required placeholder="مثال: جهاز المكتب الرئيسي">
+                    </div>
+                    <div class="form-group">
+                        <label for="device-type">نوع الجهاز</label>
+                        <select id="device-type" class="form-control">
+                            <option value="computer">كمبيوتر</option>
+                            <option value="laptop">لابتوب</option>
+                            <option value="server">سيرفر</option>
+                            <option value="router">راوتر</option>
+                            <option value="printer">طابعة</option>
+                            <option value="mobile">جوال</option>
+                            <option value="tablet">تابلت</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="device-location">الموقع (اختياري)</label>
+                        <input type="text" id="device-location" class="form-control" placeholder="مثال: مكتب الإدارة - الطابق الثاني">
+                    </div>
+                    
+                    <!-- رسالة توضيحية -->
+                    <div style="padding: 1rem; background: rgba(67, 97, 238, 0.15); border-radius: 10px; margin-bottom: 1rem; border: 1px solid rgba(67, 97, 238, 0.3); border-right: 4px solid #4361ee;">
+                        <div style="display: flex; align-items: start; gap: 0.75rem;">
+                            <i class="fas fa-info-circle" style="color: #4361ee; font-size: 1.2rem; margin-top: 0.2rem;"></i>
+                            <div>
+                                <strong style="color: #4361ee; display: block; margin-bottom: 0.25rem;">ملاحظة مهمة:</strong>
+                                <p style="margin: 0; color: rgba(255, 255, 255, 0.9); font-size: 0.9rem; line-height: 1.5;">
+                                    سيتم جلب <strong>MAC Address</strong> و <strong>IP Address</strong> تلقائياً من الجهاز عند تشغيل عميل المراقبة (<code>device_client.py</code>). 
+                                    لا حاجة لإدخالها يدوياً الآن.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- حقول إضافية للأدمن (اختيارية) -->
+                    <div id="admin-extra-fields" style="display: none;">
+                        <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 1.5rem 0;">
+                        <h4 style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem; font-size: 1rem;">حقول إضافية (اختيارية)</h4>
+                        
+                        <div class="form-group">
+                            <label for="device-ip">عنوان IP (اختياري - سيتم جلبها تلقائياً)</label>
+                            <input type="text" id="device-ip" class="form-control" placeholder="مثال: 192.168.1.100" pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+                            <small style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">يمكنك إدخال IP يدوياً إذا كنت تريد تحديده مسبقاً</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="device-mac">عنوان MAC (اختياري - سيتم جلبها تلقائياً)</label>
+                            <input type="text" id="device-mac" class="form-control" placeholder="مثال: 00:1B:44:11:3A:B7">
+                            <small style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">يمكنك إدخال MAC يدوياً إذا كنت تريد تحديده مسبقاً</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="device-os">نظام التشغيل (اختياري)</label>
+                            <input type="text" id="device-os" class="form-control" placeholder="مثال: Windows 11, Linux Ubuntu 22.04">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="device-processor">المعالج (اختياري)</label>
+                            <input type="text" id="device-processor" class="form-control" placeholder="مثال: Intel Core i7, AMD Ryzen 5">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="device-ram">الذاكرة RAM (GB) (اختياري)</label>
+                                    <input type="number" id="device-ram" class="form-control" min="0" placeholder="مثال: 16">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="device-disk">سعة القرص (GB) (اختياري)</label>
+                                    <input type="number" id="device-disk" class="form-control" min="0" placeholder="مثال: 500">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('add-device-modal')">إلغاء</button>
+                <button class="btn btn-primary" onclick="addDevice()">إضافة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة إجراءات الجهاز -->
+    <div id="device-actions-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إجراءات الجهاز</h3>
+                <button class="close" onclick="closeModal('device-actions-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="action-buttons-grid">
+                    <button class="action-btn" onclick="restartDevice()">
+                        <i class="fas fa-redo"></i>
+                        إعادة تشغيل
+                    </button>
+                    <button class="action-btn" onclick="shutdownDevice()">
+                        <i class="fas fa-power-off"></i>
+                        إيقاف التشغيل
+                    </button>
+                    <button class="action-btn" onclick="updateDevice()">
+                        <i class="fas fa-sync"></i>
+                        تحديث النظام
+                    </button>
+                    <button class="action-btn" onclick="scanDevice()">
+                        <i class="fas fa-search"></i>
+                        فحص الجهاز
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل الجهاز -->
+    <div id="edit-device-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل بيانات الجهاز</h3>
+                <button class="close" onclick="closeEditDeviceModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-device-form">
+                    <input type="hidden" id="edit-device-id">
+                    
+                    <!-- البيانات الأساسية -->
+                    <div class="form-group">
+                        <label for="edit-device-name">اسم الجهاز <span class="required">*</span></label>
+                        <input type="text" id="edit-device-name" class="form-control" required placeholder="مثال: جهاز المكتب الرئيسي">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-device-type">نوع الجهاز</label>
+                        <select id="edit-device-type" class="form-control">
+                            <option value="computer">كمبيوتر</option>
+                            <option value="laptop">لابتوب</option>
+                            <option value="server">سيرفر</option>
+                            <option value="router">راوتر</option>
+                            <option value="printer">طابعة</option>
+                            <option value="mobile">جوال</option>
+                            <option value="tablet">تابلت</option>
+                            <option value="other">أخرى</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-device-location">الموقع</label>
+                        <input type="text" id="edit-device-location" class="form-control" placeholder="مثال: مكتب الإدارة - الطابق الثاني">
+                    </div>
+                    
+                    <!-- التفاصيل الإضافية (للجميع) -->
+                    <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 1.5rem 0;">
+                    <h4 style="color: rgba(255, 255, 255, 0.8); margin-bottom: 1rem; font-size: 1rem;">التفاصيل الإضافية</h4>
+                    
+                    <div class="form-group">
+                        <label for="edit-device-ip">عنوان IP</label>
+                        <input type="text" id="edit-device-ip" class="form-control" placeholder="مثال: 192.168.1.100">
+                        <small style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">اتركه فارغاً إذا كنت تريد جلب IP تلقائياً من الجهاز</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-device-mac">عنوان MAC</label>
+                        <input type="text" id="edit-device-mac" class="form-control" placeholder="مثال: 00:1B:44:11:3A:B7">
+                        <small style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">اتركه فارغاً إذا كنت تريد جلب MAC تلقائياً من الجهاز</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-device-os">نظام التشغيل</label>
+                        <input type="text" id="edit-device-os" class="form-control" placeholder="مثال: Windows 11, Linux Ubuntu 22.04">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="edit-device-processor">المعالج</label>
+                        <input type="text" id="edit-device-processor" class="form-control" placeholder="مثال: Intel Core i7, AMD Ryzen 5">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="edit-device-ram">الذاكرة RAM (GB)</label>
+                                <input type="number" id="edit-device-ram" class="form-control" min="0" placeholder="مثال: 16">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="edit-device-disk">سعة القرص (GB)</label>
+                                <input type="number" id="edit-device-disk" class="form-control" min="0" placeholder="مثال: 500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- الحالة (للأدمن فقط) -->
+                    <div id="edit-admin-status-field" style="display: none;">
+                        <div class="form-group">
+                            <label for="edit-device-status">الحالة</label>
+                            <select id="edit-device-status" class="form-control">
+                                <option value="healthy">سليم</option>
+                                <option value="warning">تحذير</option>
+                                <option value="critical">حرج</option>
+                            </select>
+                            <small style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem;">هذا الحقل متاح للإدارة فقط</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditDeviceModal()">إلغاء</button>
+                <button class="btn btn-primary" onclick="updateDeviceData()">حفظ التعديلات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- منطقة الإشعارات -->
+    <div id="notification-area"></div>
+
+    <script>
+        // مصفوفة الأجهزة
+        let devices = [];
+        const userRole = '{{ session.role | default("user") }}';
+        let currentEditDeviceId = null;
+        
+        // تهيئة الحقول حسب الدور عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            if (userRole === 'admin' || userRole === 'technician' || userRole === 'manager') {
+                // عرض الحقول الإضافية للأدمن (يمكن إخفاؤها/إظهارها)
+                const adminExtraFields = document.getElementById('admin-extra-fields');
+                if (adminExtraFields) {
+                    adminExtraFields.style.display = 'block';
+                }
+            } else {
+                // إخفاء الحقول الإضافية للمستخدمين العاديين
+                const adminExtraFields = document.getElementById('admin-extra-fields');
+                if (adminExtraFields) {
+                    adminExtraFields.style.display = 'none';
+                }
+            }
+        });
+        
+        // تحميل الأجهزة من الـ API
+        async function loadDevicesFromAPI() {
+            try {
+                const response = await fetch('/devices/api');
+                const data = await response.json();
+                
+                if (response.ok && Array.isArray(data)) {
+                    // تحويل البيانات من الـ API إلى الصيغة المستخدمة في الواجهة
+                    devices = data.map(device => {
+                        // حساب وقت آخر تحديث من last_seen
+                        let lastUpdate = 'غير متصل';
+                        const timeSource = device.last_seen || device.last_update;
+                        
+                        if (timeSource) {
+                            try {
+                                const updateTime = new Date(timeSource);
+                                const now = new Date();
+                                const diffMs = now - updateTime;
+                                const diffMins = Math.floor(diffMs / 60000);
+                                
+                                if (diffMins < 1) {
+                                    lastUpdate = 'الآن';
+                                } else if (diffMins < 60) {
+                                    lastUpdate = `منذ ${diffMins} دقيقة`;
+                                } else if (diffMins < 1440) {
+                                    const diffHours = Math.floor(diffMins / 60);
+                                    lastUpdate = `منذ ${diffHours} ساعة`;
+                                } else {
+                                    const diffDays = Math.floor(diffMins / 1440);
+                                    lastUpdate = `منذ ${diffDays} يوم`;
+                                }
+                            } catch (e) {
+                                lastUpdate = 'غير محدد';
+                            }
+                        }
+                        
+                        return {
+                            id: device.id,
+                            name: device.name || 'جهاز بدون اسم',
+                            location: device.location || 'غير محدد',
+                            status: device.status || 'healthy',
+                            cpu_usage: device.cpu_usage !== null && device.cpu_usage !== undefined ? parseFloat(device.cpu_usage) : null,
+                            ram_usage: device.ram_usage !== null && device.ram_usage !== undefined ? parseFloat(device.ram_usage) : null,
+                            disk_usage: device.disk_usage !== null && device.disk_usage !== undefined ? parseFloat(device.disk_usage) : null,
+                            temperature: (device.temperature !== null && device.temperature !== undefined && device.temperature > 0) ? parseFloat(device.temperature) : null,
+                            battery: device.battery_level !== null && device.battery_level !== undefined ? parseInt(device.battery_level) : null,
+                            last_update: lastUpdate
+                        };
+                    });
+                } else {
+                    devices = [];
+                    if (data.error) {
+                        console.error('خطأ في تحميل الأجهزة:', data.error);
+                        showNotification('حدث خطأ في تحميل الأجهزة: ' + data.error, 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('خطأ في الاتصال:', error);
+                devices = [];
+                showNotification('حدث خطأ في الاتصال بالسيرفر', 'error');
+            }
+        }
+        
+
+        let currentView = 'grid';
+        let currentDeviceId = null;
+
+        // تحديث البيانات تلقائياً كل 5 ثوان
+        let autoRefreshInterval;
+        function startAutoRefresh() {
+            // تحديث فوري عند التحميل
+            loadDevicesFromAPI().then(() => {
+                renderDevices();
+            });
+            
+            // تحديث كل 5 ثوان
+            autoRefreshInterval = setInterval(async () => {
+                await loadDevicesFromAPI();
+                renderDevices();
+            }, 5000); // 5 ثوان
+        }
+        
+        // إيقاف التحديث التلقائي
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+        
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', async function() {
+            createParticles();
+            startAutoRefresh();
+            setupEventListeners();
+        });
+        
+        // تنظيف عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+        
+        // تحديث البيانات (لزر التحديث اليدوي)
+        async function refreshData() {
+            await loadDevicesFromAPI();
+            renderDevices();
+            showNotification('تم تحديث البيانات بنجاح', 'success');
+        }
+
+        // إنشاء تأثير الجسيمات
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // حجم عشوائي
+                const size = Math.random() * 6 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // موقع عشوائي
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // تأخير عشوائي للحركة
+                particle.style.animationDelay = `${Math.random() * 15}s`;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // عرض الأجهزة
+        function renderDevices() {
+            renderGridView();
+            renderListView();
+            updateStats();
+        }
+
+        // عرض الأجهزة في نمط الشبكة
+        function renderGridView() {
+            const gridView = document.getElementById('grid-view');
+            gridView.innerHTML = '';
+            
+            // إذا لم توجد أجهزة
+            if (devices.length === 0) {
+                gridView.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                        <div class="empty-icon" style="font-size: 4rem; color: rgba(255, 255, 255, 0.3); margin-bottom: 1rem;">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <h3 style="color: white; margin-bottom: 0.5rem;">لا توجد أجهزة</h3>
+                        <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 2rem;">لم يتم إضافة أي أجهزة بعد. اضغط على زر "إضافة جهاز" لإضافة جهاز جديد.</p>
+                        <button class="btn btn-primary" onclick="showAddDeviceModal()">
+                            <i class="fas fa-plus"></i>
+                            إضافة جهاز جديد
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            devices.forEach(device => {
+                const deviceCard = document.createElement('div');
+                deviceCard.className = `device-card ${device.status}`;
+                deviceCard.setAttribute('data-device-id', device.id);
+                
+                deviceCard.innerHTML = `
+                    <div class="device-card-header">
+                        <div class="device-icon">
+                            <i class="fas fa-desktop"></i>
+                        </div>
+                        <div class="device-status-badge">
+                            <span class="status status-${device.status}">
+                                ${device.status === 'healthy' ? 'سليم' : device.status === 'warning' ? 'تحذير' : 'حرج'}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="device-card-body">
+                        <h3 class="device-name">${device.name}</h3>
+                        <p class="device-location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            ${device.location}
+                        </p>
+                        
+                        <div class="device-metrics">
+                            ${(device.cpu_usage === null || device.cpu_usage === undefined) && (device.ram_usage === null || device.ram_usage === undefined) ? `
+                                <div style="text-align: center; padding: 1rem; color: rgba(255, 255, 255, 0.6);">
+                                    <i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+                                    <p style="margin: 0; font-size: 0.9rem;">لا توجد بيانات بعد</p>
+                                    <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem;">قم بتشغيل عميل المراقبة على الجهاز</p>
+                                    <p style="margin: 0.5rem 0 0 0; font-size: 0.75rem; color: rgba(255, 255, 255, 0.5);">سيتم عرض البيانات الحقيقية تلقائياً عند إرسالها</p>
+                                </div>
+                            ` : `
+                            ${device.cpu_usage !== null && device.cpu_usage !== undefined ? `
+                            <div class="metric-item">
+                                <div class="metric-header">
+                                    <span class="metric-label">CPU</span>
+                                    <span class="metric-value">${device.cpu_usage.toFixed(1)}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar ${device.cpu_usage > 90 ? 'progress-bar-danger' : device.cpu_usage > 70 ? 'progress-bar-warning' : ''}" 
+                                         style="width: ${Math.min(device.cpu_usage, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${device.ram_usage !== null && device.ram_usage !== undefined ? `
+                            <div class="metric-item">
+                                <div class="metric-header">
+                                    <span class="metric-label">RAM</span>
+                                    <span class="metric-value">${device.ram_usage.toFixed(1)}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar ${device.ram_usage > 90 ? 'progress-bar-danger' : device.ram_usage > 70 ? 'progress-bar-warning' : ''}" 
+                                         style="width: ${Math.min(device.ram_usage, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${device.disk_usage !== null && device.disk_usage !== undefined ? `
+                            <div class="metric-item">
+                                <div class="metric-header">
+                                    <span class="metric-label">Disk</span>
+                                    <span class="metric-value">${device.disk_usage.toFixed(1)}%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar ${device.disk_usage > 90 ? 'progress-bar-danger' : device.disk_usage > 70 ? 'progress-bar-warning' : ''}" 
+                                         style="width: ${Math.min(device.disk_usage, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${device.temperature !== null && device.temperature !== undefined && device.temperature > 0 ? `
+                            <div class="metric-item">
+                                <div class="metric-header">
+                                    <span class="metric-label">Temperature</span>
+                                    <span class="metric-value">${device.temperature.toFixed(1)}°C</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar ${device.temperature > 80 ? 'progress-bar-danger' : device.temperature > 65 ? 'progress-bar-warning' : ''}" 
+                                         style="width: ${Math.min((device.temperature / 100) * 100, 100)}%"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                            `}
+                        </div>
+                        
+                        <div class="device-info">
+                            ${device.battery !== null && device.battery !== undefined ? `
+                            <div class="info-item">
+                                <i class="fas fa-battery-${device.battery > 75 ? 'full' : device.battery > 50 ? 'three-quarters' : device.battery > 25 ? 'half' : device.battery > 10 ? 'quarter' : 'empty'}"></i>
+                                <span>${device.battery}%</span>
+                            </div>
+                            ` : `
+                            <div class="info-item" style="color: rgba(255, 255, 255, 0.5);">
+                                <i class="fas fa-plug"></i>
+                                <span>جهاز مكتبي</span>
+                            </div>
+                            `}
+                            <div class="info-item">
+                                <i class="fas fa-clock"></i>
+                                <span>${device.last_update || 'غير متصل'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="device-card-footer">
+                        <a href="/devices/${device.id}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i>
+                            تفاصيل
+                        </a>
+                        <button class="btn btn-info btn-sm" onclick="editDevice(${device.id})">
+                            <i class="fas fa-edit"></i>
+                            تعديل
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteDevice(${device.id}, '${device.name}')">
+                            <i class="fas fa-trash"></i>
+                            حذف
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="refreshDevice(${device.id})">
+                            <i class="fas fa-sync-alt"></i>
+                            تحديث
+                        </button>
+                    </div>
+                `;
+                
+                gridView.appendChild(deviceCard);
+            });
+        }
+
+        // عرض الأجهزة في نمط القائمة
+        function renderListView() {
+            const listView = document.getElementById('devices-table-body');
+            listView.innerHTML = '';
+            
+            // إذا لم توجد أجهزة
+            if (devices.length === 0) {
+                listView.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 3rem; color: rgba(255, 255, 255, 0.7);">
+                            <div style="margin-bottom: 1rem;">
+                                <i class="fas fa-desktop" style="font-size: 3rem; color: rgba(255, 255, 255, 0.3);"></i>
+                            </div>
+                            <h3 style="color: white; margin-bottom: 0.5rem;">لا توجد أجهزة</h3>
+                            <p style="margin-bottom: 2rem;">لم يتم إضافة أي أجهزة بعد. اضغط على زر "إضافة جهاز" لإضافة جهاز جديد.</p>
+                            <button class="btn btn-primary" onclick="showAddDeviceModal()">
+                                <i class="fas fa-plus"></i>
+                                إضافة جهاز جديد
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            devices.forEach(device => {
+                const deviceRow = document.createElement('tr');
+                deviceRow.className = `device-row ${device.status}`;
+                deviceRow.setAttribute('data-device-id', device.id);
+                
+                deviceRow.innerHTML = `
+                    <td>
+                        <div class="device-name-cell">
+                            <i class="fas fa-desktop"></i>
+                            ${device.name}
+                        </div>
+                    </td>
+                    <td>${device.location}</td>
+                    <td>
+                        <span class="status status-${device.status}">
+                            ${device.status === 'healthy' ? 'سليم' : device.status === 'warning' ? 'تحذير' : 'حرج'}
+                        </span>
+                    </td>
+                    <td>
+                        ${device.cpu_usage === null || device.cpu_usage === undefined ? `
+                            <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">
+                                <i class="fas fa-info-circle"></i> لا توجد بيانات
+                            </span>
+                        ` : `
+                        <div class="metric-cell">
+                            <span class="metric-value">${device.cpu_usage.toFixed(1)}%</span>
+                            <div class="progress">
+                                <div class="progress-bar ${device.cpu_usage > 90 ? 'progress-bar-danger' : device.cpu_usage > 70 ? 'progress-bar-warning' : ''}" 
+                                     style="width: ${Math.min(device.cpu_usage, 100)}%"></div>
+                            </div>
+                        </div>
+                        `}
+                    </td>
+                    <td>
+                        ${device.ram_usage === null || device.ram_usage === undefined ? `
+                            <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">
+                                <i class="fas fa-info-circle"></i> لا توجد بيانات
+                            </span>
+                        ` : `
+                        <div class="metric-cell">
+                            <span class="metric-value">${device.ram_usage.toFixed(1)}%</span>
+                            <div class="progress">
+                                <div class="progress-bar ${device.ram_usage > 90 ? 'progress-bar-danger' : device.ram_usage > 70 ? 'progress-bar-warning' : ''}" 
+                                     style="width: ${Math.min(device.ram_usage, 100)}%"></div>
+                            </div>
+                        </div>
+                        `}
+                    </td>
+                    <td>
+                        ${device.disk_usage === null || device.disk_usage === undefined ? `
+                            <span style="color: rgba(255, 255, 255, 0.5); font-size: 0.85rem;">
+                                <i class="fas fa-info-circle"></i> لا توجد بيانات
+                            </span>
+                        ` : `
+                        <div class="metric-cell">
+                            <span class="metric-value">${device.disk_usage.toFixed(1)}%</span>
+                            <div class="progress">
+                                <div class="progress-bar ${device.disk_usage > 90 ? 'progress-bar-danger' : device.disk_usage > 70 ? 'progress-bar-warning' : ''}" 
+                                     style="width: ${Math.min(device.disk_usage, 100)}%"></div>
+                            </div>
+                        </div>
+                        `}
+                    </td>
+                    <td>
+                        ${device.temperature !== null && device.temperature !== undefined && device.temperature > 0 ? device.temperature.toFixed(1) + '°C' : '<span style="color: rgba(255, 255, 255, 0.5);">-</span>'}
+                    </td>
+                    <td>
+                        ${device.battery !== null && device.battery !== undefined ? `
+                            <i class="fas fa-battery-${device.battery > 75 ? 'full' : device.battery > 50 ? 'three-quarters' : device.battery > 25 ? 'half' : device.battery > 10 ? 'quarter' : 'empty'}"></i>
+                            ${device.battery}%
+                        ` : '<span style="color: rgba(255, 255, 255, 0.5);" title="جهاز مكتبي (لا يحتوي على بطارية)">-</span>'}
+                    </td>
+                    <td>${device.last_update || '<span style="color: rgba(255, 255, 255, 0.5);">غير متصل</span>'}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/devices/${device.id}" class="btn btn-primary btn-sm" title="عرض التفاصيل">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <button class="btn btn-info btn-sm" onclick="editDevice(${device.id})" title="تعديل">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteDevice(${device.id}, '${device.name.replace(/'/g, "\\'")}')" title="حذف">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <button class="btn btn-success btn-sm" onclick="refreshDevice(${device.id})" title="تحديث">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                listView.appendChild(deviceRow);
+            });
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            document.getElementById('total-devices-count').textContent = devices.length;
+            document.getElementById('healthy-count').textContent = devices.filter(d => d.status === 'healthy').length;
+            document.getElementById('warning-count').textContent = devices.filter(d => d.status === 'warning').length;
+            document.getElementById('critical-count').textContent = devices.filter(d => d.status === 'critical').length;
+        }
+
+        // إعداد مستمعي الأحداث
+        function setupEventListeners() {
+            const statusFilter = document.getElementById('status-filter');
+            const locationFilter = document.getElementById('location-filter');
+            const searchInput = document.getElementById('search-input');
+            const refreshBtn = document.getElementById('refresh-btn');
+
+            statusFilter.addEventListener('change', applyFilters);
+            locationFilter.addEventListener('change', applyFilters);
+            searchInput.addEventListener('input', applyFilters);
+            refreshBtn.addEventListener('click', refreshData);
+        }
+
+        // تطبيق الفلاتر
+        function applyFilters() {
+            const status = document.getElementById('status-filter').value;
+            const location = document.getElementById('location-filter').value;
+            const search = document.getElementById('search-input').value.toLowerCase();
+            
+            const deviceCards = document.querySelectorAll('.device-card');
+            const deviceRows = document.querySelectorAll('.device-row');
+            
+            const items = currentView === 'grid' ? deviceCards : deviceRows;
+            
+            items.forEach(item => {
+                const deviceId = item.getAttribute('data-device-id');
+                const device = devices.find(d => d.id == deviceId);
+                
+                if (!device) return;
+                
+                const matchesStatus = !status || device.status === status;
+                const matchesLocation = !location || device.location === location;
+                const matchesSearch = !search || device.name.toLowerCase().includes(search);
+                
+                if (matchesStatus && matchesLocation && matchesSearch) {
+                    item.style.display = currentView === 'grid' ? 'block' : 'table-row';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // تبديل العرض
+        function toggleView(view) {
+            currentView = view;
+            const gridView = document.getElementById('grid-view');
+            const listView = document.getElementById('list-view');
+            const gridBtn = document.getElementById('grid-view-btn');
+            const listBtn = document.getElementById('list-view-btn');
+
+            if (view === 'grid') {
+                gridView.style.display = 'grid';
+                listView.style.display = 'none';
+                gridBtn.classList.add('active');
+                listBtn.classList.remove('active');
+            } else {
+                gridView.style.display = 'none';
+                listView.style.display = 'block';
+                listBtn.classList.add('active');
+                gridBtn.classList.remove('active');
+            }
+            
+            applyFilters();
+        }
+
+        // إظهار نافذة إضافة جهاز
+        function showAddDeviceModal() {
+            document.getElementById('add-device-modal').style.display = 'flex';
+        }
+
+        // إغلاق النافذة
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // نسخ device_token
+        function copyToken(token) {
+            navigator.clipboard.writeText(token).then(() => {
+                showNotification('تم نسخ الرمز إلى الحافظة', 'success');
+            }).catch(() => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = token;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('تم نسخ الرمز إلى الحافظة', 'success');
+            });
+        }
+        
+        // إغلاق نافذة token
+        function closeTokenModal() {
+            const modal = document.querySelector('[style*="z-index: 10000"]');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // إضافة جهاز
+        async function addDevice() {
+            const name = document.getElementById('device-name').value.trim();
+            const deviceType = document.getElementById('device-type').value;
+            const location = document.getElementById('device-location').value.trim() || 'غير محدد';
+            
+            // التحقق من الحقل المطلوب الوحيد
+            if (!name) {
+                showNotification('يرجى إدخال اسم الجهاز', 'error');
+                return;
+            }
+            
+            // الحقول الإضافية (اختيارية للجميع)
+            let ip = document.getElementById('device-ip') ? document.getElementById('device-ip').value.trim() : '';
+            let mac = document.getElementById('device-mac') ? document.getElementById('device-mac').value.trim() : '';
+            let os = document.getElementById('device-os') ? document.getElementById('device-os').value.trim() : '';
+            let processor = document.getElementById('device-processor') ? document.getElementById('device-processor').value.trim() : '';
+            let ram = document.getElementById('device-ram') && document.getElementById('device-ram').value ? parseInt(document.getElementById('device-ram').value) : null;
+            let disk = document.getElementById('device-disk') && document.getElementById('device-disk').value ? parseInt(document.getElementById('device-disk').value) : null;
+            
+            // التحقق من صحة عنوان IP إذا تم إدخاله
+            if (ip) {
+                const ipPattern = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+                if (!ipPattern.test(ip)) {
+                    showNotification('عنوان IP غير صحيح. استخدم الصيغة: 192.168.1.1', 'error');
+                    return;
+                }
+            } else {
+                ip = null;
+            }
+            
+            // إذا لم يتم إدخال MAC أو IP، اجعلهما null (سيتم جلبها تلقائياً)
+            if (!mac) mac = null;
+            if (!os) os = null;
+            if (!processor) processor = null;
+
+            // إظهار حالة التحميل
+            const submitBtn = document.querySelector('#add-device-modal .btn-primary');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الإضافة...';
+
+            try {
+                // إرسال البيانات إلى السيرفر
+                const response = await fetch('/devices/api/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        device_type: deviceType,
+                        location: location,
+                        ip_address: ip,
+                        mac_address: mac || null,
+                        operating_system: os || null,
+                        processor: processor || null,
+                        ram_total: ram,
+                        disk_total: disk,
+                        status: 'healthy'
+                    })
+                });
+
+                // التحقق من نوع الاستجابة
+                let result;
+                try {
+                    result = await response.json();
+                } catch (e) {
+                    showNotification('خطأ في قراءة الاستجابة من السيرفر', 'error');
+                    return;
+                }
+
+                if (response.ok && result.success) {
+                    const device = result.device;
+                    let message = 'تم إضافة الجهاز بنجاح!';
+                    
+                    // عرض device_token إذا كان متوفراً
+                    if (device.device_token) {
+                        message += `\n\nرمز الجهاز (Device Token):\n${device.device_token}\n\n`;
+                        message += 'احفظ هذا الرمز لاستخدامه في عميل المراقبة.';
+                        
+                        // عرض popup مع device_token
+                        const tokenModal = `
+                            <div style="background: rgba(0,0,0,0.8); position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                                <div style="background: white; padding: 2rem; border-radius: 15px; max-width: 600px; width: 90%;">
+                                    <h2 style="color: #333; margin-bottom: 1rem;">✓ تم إضافة الجهاز بنجاح!</h2>
+                                    <p style="color: #666; margin-bottom: 1rem;">رمز الجهاز (Device Token):</p>
+                                    <div style="background: #f5f5f5; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; word-break: break-all; font-family: monospace; color: #333;">
+                                        ${device.device_token}
+                                    </div>
+                                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 1.5rem;">
+                                        <strong>مهم:</strong> احفظ هذا الرمز في مكان آمن. ستحتاجه لتشغيل عميل المراقبة على الجهاز.
+                                    </p>
+                                    <div style="display: flex; gap: 1rem;">
+                                        <button onclick="copyToken('${device.device_token}')" style="flex: 1; padding: 0.75rem; background: #4361ee; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                            نسخ الرمز
+                                        </button>
+                                        <button onclick="closeTokenModal()" style="flex: 1; padding: 0.75rem; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                            إغلاق
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        document.body.insertAdjacentHTML('beforeend', tokenModal);
+                    }
+                    
+                    showNotification('تم إضافة الجهاز بنجاح', 'success');
+                    closeModal('add-device-modal');
+                    document.getElementById('add-device-form').reset();
+                    // إعادة تحميل قائمة الأجهزة
+                    await loadDevicesFromAPI();
+                    renderDevices();
+                } else {
+                    const errorMsg = result.error || 'حدث خطأ أثناء إضافة الجهاز';
+                    console.error('خطأ من السيرفر:', response.status, result);
+                    showNotification(`خطأ (${response.status}): ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                console.error('خطأ:', error);
+                let errorMsg = 'حدث خطأ في الاتصال بالسيرفر';
+                if (error.message) {
+                    errorMsg += ': ' + error.message;
+                }
+                showNotification(errorMsg, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        }
+
+        // عرض تفاصيل الجهاز
+        function viewDeviceDetails(deviceId) {
+            // إعادة توجيه إلى صفحة تفاصيل الجهاز
+            window.location.href = `/devices/${deviceId}`;
+        }
+
+        // تحديث بيانات الجهاز (إعادة تحميل)
+        function refreshDevice(deviceId) {
+            loadDevicesFromAPI().then(() => {
+                renderDevices();
+                showNotification('تم تحديث بيانات الجهاز بنجاح', 'success');
+            });
+        }
+
+        // تعديل بيانات الجهاز
+        async function editDevice(deviceId) {
+            try {
+                const device = devices.find(d => d.id === deviceId);
+                if (!device) {
+                    showNotification('الجهاز غير موجود', 'error');
+                    return;
+                }
+                
+                currentEditDeviceId = deviceId;
+                
+                // ملء النموذج بالبيانات الحالية
+                document.getElementById('edit-device-id').value = device.id;
+                document.getElementById('edit-device-name').value = (device.name !== null && device.name !== undefined) ? device.name : '';
+                document.getElementById('edit-device-type').value = device.device_type || 'computer';
+                document.getElementById('edit-device-location').value = (device.location !== null && device.location !== undefined) ? device.location : '';
+                
+                // ملء جميع البيانات (للجميع)
+                const ipField = document.getElementById('edit-device-ip');
+                const macField = document.getElementById('edit-device-mac');
+                const osField = document.getElementById('edit-device-os');
+                const processorField = document.getElementById('edit-device-processor');
+                const ramField = document.getElementById('edit-device-ram');
+                const diskField = document.getElementById('edit-device-disk');
+                const statusField = document.getElementById('edit-device-status');
+                const statusFieldContainer = document.getElementById('edit-admin-status-field');
+                
+                // ملء البيانات الأساسية (للجميع)
+                if (ipField) ipField.value = (device.ip_address !== null && device.ip_address !== undefined) ? device.ip_address : '';
+                if (macField) macField.value = (device.mac_address !== null && device.mac_address !== undefined) ? device.mac_address : '';
+                if (osField) osField.value = (device.operating_system !== null && device.operating_system !== undefined) ? device.operating_system : '';
+                if (processorField) processorField.value = (device.processor !== null && device.processor !== undefined) ? device.processor : '';
+                if (ramField) ramField.value = (device.ram_total !== null && device.ram_total !== undefined) ? device.ram_total : '';
+                if (diskField) diskField.value = (device.disk_total !== null && device.disk_total !== undefined) ? device.disk_total : '';
+                
+                // الحالة (Status) للأدمن فقط
+                if (userRole === 'admin' || userRole === 'technician' || userRole === 'manager') {
+                    if (statusFieldContainer) statusFieldContainer.style.display = 'block';
+                    if (statusField) statusField.value = device.status || 'healthy';
+                } else {
+                    if (statusFieldContainer) statusFieldContainer.style.display = 'none';
+                }
+                
+                // عرض النافذة
+                document.getElementById('edit-device-modal').style.display = 'flex';
+            } catch (error) {
+                console.error('خطأ في تحميل بيانات الجهاز:', error);
+                showNotification('حدث خطأ في تحميل بيانات الجهاز', 'error');
+            }
+        }
+
+        // إغلاق نافذة التعديل
+        function closeEditDeviceModal() {
+            document.getElementById('edit-device-modal').style.display = 'none';
+            document.getElementById('edit-device-form').reset();
+            currentEditDeviceId = null;
+        }
+
+        // حفظ تعديلات الجهاز
+        async function updateDeviceData() {
+            try {
+                const deviceId = document.getElementById('edit-device-id').value;
+                if (!deviceId) {
+                    showNotification('خطأ: لم يتم تحديد الجهاز', 'error');
+                    return;
+                }
+                
+                const name = document.getElementById('edit-device-name').value.trim();
+                if (!name) {
+                    showNotification('يرجى إدخال اسم الجهاز', 'error');
+                    return;
+                }
+                
+                const updateData = {
+                    name: name,
+                    device_type: document.getElementById('edit-device-type').value,
+                    location: document.getElementById('edit-device-location').value.trim() || 'غير محدد'
+                };
+                
+                // إضافة جميع الحقول (للجميع)
+                const ipField = document.getElementById('edit-device-ip');
+                const macField = document.getElementById('edit-device-mac');
+                const osField = document.getElementById('edit-device-os');
+                const processorField = document.getElementById('edit-device-processor');
+                const ramField = document.getElementById('edit-device-ram');
+                const diskField = document.getElementById('edit-device-disk');
+                const statusField = document.getElementById('edit-device-status');
+                
+                // IP Address
+                if (ipField) {
+                    const ip = ipField.value.trim();
+                    if (ip) {
+                        const ipPattern = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/;
+                        if (!ipPattern.test(ip)) {
+                            showNotification('عنوان IP غير صحيح. استخدم الصيغة: 192.168.1.1', 'error');
+                            return;
+                        }
+                        updateData.ip_address = ip;
+                    } else {
+                        updateData.ip_address = null; // للسماح بجلب IP تلقائياً
+                    }
+                }
+                
+                // MAC Address
+                if (macField) {
+                    updateData.mac_address = macField.value.trim() || null;
+                }
+                
+                // Operating System
+                if (osField) {
+                    updateData.operating_system = osField.value.trim() || null;
+                }
+                
+                // Processor
+                if (processorField) {
+                    updateData.processor = processorField.value.trim() || null;
+                }
+                
+                // RAM
+                if (ramField && ramField.value) {
+                    const ram = parseInt(ramField.value);
+                    if (!isNaN(ram) && ram >= 0) {
+                        updateData.ram_total = ram;
+                    } else {
+                        updateData.ram_total = null;
+                    }
+                } else {
+                    updateData.ram_total = null;
+                }
+                
+                // Disk
+                if (diskField && diskField.value) {
+                    const disk = parseInt(diskField.value);
+                    if (!isNaN(disk) && disk >= 0) {
+                        updateData.disk_total = disk;
+                    } else {
+                        updateData.disk_total = null;
+                    }
+                } else {
+                    updateData.disk_total = null;
+                }
+                
+                // Status (للأدمن فقط)
+                if (userRole === 'admin' || userRole === 'technician' || userRole === 'manager') {
+                    if (statusField) {
+                        updateData.status = statusField.value;
+                    }
+                }
+                
+                // إظهار حالة التحميل
+                const submitBtn = document.querySelector('#edit-device-modal .btn-primary');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+                
+                // إرسال البيانات
+                const response = await fetch(`/devices/api/${deviceId}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(updateData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('تم تحديث بيانات الجهاز بنجاح', 'success');
+                    closeEditDeviceModal();
+                    // إعادة تحميل الأجهزة
+                    await loadDevicesFromAPI();
+                    renderDevices();
+                } else {
+                    const errorMsg = result.error || 'حدث خطأ أثناء تحديث الجهاز';
+                    showNotification(`خطأ: ${errorMsg}`, 'error');
+                }
+                
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            } catch (error) {
+                console.error('خطأ في تحديث الجهاز:', error);
+                showNotification('حدث خطأ في الاتصال بالسيرفر', 'error');
+            }
+        }
+
+        // حذف الجهاز
+        async function deleteDevice(deviceId, deviceName) {
+            if (!confirm(`هل أنت متأكد من حذف الجهاز "${deviceName}"؟\n\nسيتم حذف جميع البيانات المرتبطة بهذا الجهاز بشكل نهائي.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/devices/api/${deviceId}/delete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('تم حذف الجهاز بنجاح', 'success');
+                    // إعادة تحميل الأجهزة
+                    await loadDevicesFromAPI();
+                    renderDevices();
+                } else {
+                    const errorMsg = result.error || 'حدث خطأ أثناء حذف الجهاز';
+                    showNotification(`خطأ: ${errorMsg}`, 'error');
+                }
+            } catch (error) {
+                console.error('خطأ في حذف الجهاز:', error);
+                showNotification('حدث خطأ في الاتصال بالسيرفر', 'error');
+            }
+        }
+
+        // إظهار إجراءات الجهاز
+        function showDeviceActions(deviceId) {
+            currentDeviceId = deviceId;
+            document.getElementById('device-actions-modal').style.display = 'flex';
+        }
+
+        // إعادة تشغيل الجهاز
+        function restartDevice() {
+            showNotification('تم إرسال أمر إعادة التشغيل للجهاز', 'info');
+            closeModal('device-actions-modal');
+        }
+
+        // إيقاف تشغيل الجهاز
+        function shutdownDevice() {
+            if (confirm('هل أنت متأكد من إيقاف تشغيل الجهاز؟')) {
+                showNotification('تم إرسال أمر إيقاف التشغيل للجهاز', 'info');
+                closeModal('device-actions-modal');
+            }
+        }
+
+        // تحديث الجهاز
+        function updateDevice() {
+            showNotification('تم بدء عملية تحديث الجهاز', 'info');
+            closeModal('device-actions-modal');
+        }
+
+        // فحص الجهاز
+        function scanDevice() {
+            showNotification('تم بدء فحص الجهاز', 'info');
+            closeModal('device-actions-modal');
+        }
+
+        // تصدير الأجهزة
+        function exportDevices() {
+            showNotification('تم تصدير قائمة الأجهزة', 'success');
+        }
+
+        // مسح الفلاتر
+        function clearFilters() {
+            document.getElementById('status-filter').value = '';
+            document.getElementById('location-filter').value = '';
+            document.getElementById('search-input').value = '';
+            applyFilters();
+            showNotification('تم مسح جميع الفلاتر', 'info');
+        }
+
+
+        // عرض الإشعارات
+        function showNotification(message, type) {
+            const notificationArea = document.getElementById('notification-area');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            notificationArea.appendChild(notification);
+            
+            // إظهار الإشعار
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // إخفاء الإشعار بعد 3 ثوانٍ
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notificationArea.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</div>
+{% endblock %}

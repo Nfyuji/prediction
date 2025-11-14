@@ -1,0 +1,5 @@
+requests>=2.31.0
+psutil>=5.9.0
+# Windows-only optional dependency for temperature monitoring
+# Install with: pip install wmi
+# wmi>=1.5.1; sys_platform == "win32"

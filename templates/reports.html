@@ -1,0 +1,2096 @@
+{% extends "base.html" %}
+
+{% block title %}التقارير والإحصائيات - نظام مراقبة الأجهزة{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #564FD8;
+            --secondary: #FF6584;
+            --success: #36D1DC;
+            --warning: #FFB347;
+            --danger: #FF6B6B;
+            --info: #4ECDC4;
+            --dark: #1A1A2E;
+            --darker: #0F0F1B;
+            --light: #F8F9FA;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --gradient-primary: linear-gradient(135deg, #6C63FF 0%, #564FD8 100%);
+            --gradient-success: linear-gradient(135deg, #36D1DC 0%, #5B86E5 100%);
+            --gradient-warning: linear-gradient(135deg, #FFB347 0%, #FFCC33 100%);
+            --gradient-danger: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            --gradient-dark: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--darker);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* تأثير الجسيمات الخلفية */
+        .particles-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(108, 99, 255, 0.3);
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.7;
+            }
+            90% {
+                opacity: 0.7;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* التصميم الرئيسي */
+        .reports-page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        /* شريط التنقل السريع */
+        .quick-nav {
+            margin-bottom: 2rem;
+        }
+
+        .quick-nav .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .quick-nav .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 101, 132, 0.1) 100%);
+            z-index: -1;
+        }
+
+        .breadcrumb {
+            background: none;
+            padding: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .breadcrumb-link {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .breadcrumb-link:hover {
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .quick-links {
+            padding: 0 1.5rem 1.5rem;
+        }
+
+        .quick-link-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .quick-link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .quick-link-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .quick-link-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .quick-link-card:hover::after {
+            left: 100%;
+        }
+
+        .quick-link-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 40px rgba(31, 38, 135, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .quick-link-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: var(--transition);
+        }
+
+        .quick-link-card:hover i {
+            transform: scale(1.2) rotate(5deg);
+        }
+
+        .quick-link-card span {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* رأس الصفحة */
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-header .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .page-header .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.15) 0%, rgba(54, 209, 220, 0.15) 100%);
+            z-index: -1;
+        }
+
+        .page-title {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #6C63FF 0%, #36D1DC 50%, #FF6584 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            font-weight: 900;
+            text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: titleGlow 4s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { 
+                filter: brightness(1) hue-rotate(0deg);
+                transform: translateY(0);
+            }
+            50% { 
+                filter: brightness(1.3) hue-rotate(10deg);
+                transform: translateY(-5px);
+            }
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            font-size: 1rem;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(108, 99, 255, 0.6);
+        }
+
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+            box-shadow: 0 8px 25px rgba(54, 209, 220, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(54, 209, 220, 0.6);
+        }
+
+        .btn-warning {
+            background: var(--gradient-warning);
+            color: white;
+            box-shadow: 0 8px 25px rgba(255, 179, 71, 0.4);
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(255, 179, 71, 0.6);
+        }
+
+        .btn-outline-primary {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .btn-outline-warning {
+            background: transparent;
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+
+        .btn-outline-warning:hover {
+            background: var(--warning);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .btn-outline-info {
+            background: transparent;
+            color: var(--info);
+            border: 2px solid var(--info);
+        }
+
+        .btn-outline-info:hover {
+            background: var(--info);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* فلاتر التقارير */
+        .filters-section {
+            margin-bottom: 3rem;
+        }
+
+        .filters-section .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-control {
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ملخص سريع */
+        .summary-section {
+            margin-bottom: 3rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+
+        .stat-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(31, 38, 135, 0.4);
+        }
+
+        .stat-card:hover::before {
+            height: 6px;
+        }
+
+        .stat-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #6C63FF 0%, #36D1DC 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: inline-block;
+            animation: iconFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(5deg); }
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .stat-change.positive {
+            color: #36D1DC;
+            background: rgba(54, 209, 220, 0.1);
+        }
+
+        .stat-change.negative {
+            color: #FF6B6B;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        /* الرسوم البيانية */
+        .charts-section {
+            margin-bottom: 3rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid-1 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: var(--glass-shadow);
+            overflow: hidden;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(31, 38, 135, 0.4);
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-title i {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* تقارير مفصلة */
+        .detailed-reports {
+            margin-bottom: 3rem;
+        }
+
+        .performance-table {
+            overflow-x: auto;
+        }
+
+        .reports-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .reports-table th,
+        .reports-table td {
+            padding: 1.25rem;
+            text-align: right;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reports-table th {
+            background: rgba(108, 99, 255, 0.2);
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .reports-table tr:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+
+        .device-info i {
+            color: var(--primary);
+            font-size: 1.2rem;
+        }
+
+        .metric-cell {
+            min-width: 100px;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .progress {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .progress-bar-warning {
+            background: var(--gradient-warning);
+        }
+
+        .progress-bar-danger {
+            background: var(--gradient-danger);
+        }
+
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-healthy {
+            background: rgba(54, 209, 220, 0.2);
+            color: #36D1DC;
+            border: 1px solid rgba(54, 209, 220, 0.3);
+        }
+
+        .status-warning {
+            background: rgba(255, 179, 71, 0.2);
+            color: #FFB347;
+            border: 1px solid rgba(255, 179, 71, 0.3);
+        }
+
+        .status-critical {
+            background: rgba(255, 107, 107, 0.2);
+            color: #FF6B6B;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        /* تقرير التنبيهات */
+        .alerts-summary {
+            margin-bottom: 2.5rem;
+        }
+
+        .alert-summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 4px solid;
+            transition: var(--transition);
+        }
+
+        .alert-summary-item:hover {
+            transform: translateX(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .alert-summary-item.critical {
+            border-left-color: #FF6B6B;
+        }
+
+        .alert-summary-item.warning {
+            border-left-color: #FFB347;
+        }
+
+        .alert-summary-item.info {
+            border-left-color: #4ECDC4;
+        }
+
+        .alert-type {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .alert-type.critical {
+            color: #FF6B6B;
+        }
+
+        .alert-type.warning {
+            color: #FFB347;
+        }
+
+        .alert-type.info {
+            color: #4ECDC4;
+        }
+
+        .alert-count {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: white;
+        }
+
+        .alert-trend {
+            font-size: 1rem;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        .alert-trend.positive {
+            color: #36D1DC;
+            background: rgba(54, 209, 220, 0.1);
+        }
+
+        .alert-trend.negative {
+            color: #FF6B6B;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .top-alerts h4 {
+            margin-bottom: 1.5rem;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .top-alerts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .top-alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: var(--transition);
+        }
+
+        .top-alert-item:hover {
+            transform: translateX(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .alert-message {
+            color: white;
+            font-weight: 600;
+        }
+
+        .alert-frequency {
+            font-weight: 900;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+
+        /* تحليل الاتجاهات */
+        .trends-analysis {
+            margin-bottom: 3rem;
+        }
+
+        .trends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .trend-item {
+            display: flex;
+            align-items: center;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 4px solid;
+            transition: var(--transition);
+        }
+
+        .trend-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .trend-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin-left: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .trend-icon.positive {
+            background: rgba(54, 209, 220, 0.2);
+            color: #36D1DC;
+            border: 2px solid rgba(54, 209, 220, 0.3);
+        }
+
+        .trend-icon.negative {
+            background: rgba(255, 107, 107, 0.2);
+            color: #FF6B6B;
+            border: 2px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .trend-icon.neutral {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .trend-content h4 {
+            margin-bottom: 0.75rem;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .trend-content p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* التوصيات */
+        .recommendations {
+            margin-bottom: 3rem;
+        }
+
+        .recommendations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 4px solid;
+            transition: var(--transition);
+        }
+
+        .recommendation-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .recommendation-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: var(--gradient-warning);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-left: 1.5rem;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .recommendation-item:hover .recommendation-icon {
+            transform: scale(1.1) rotate(10deg);
+        }
+
+        .recommendation-content {
+            flex: 1;
+        }
+
+        .recommendation-content h4 {
+            margin-bottom: 1rem;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .recommendation-content p {
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .recommendation-priority {
+            padding: 0.5rem 1.5rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .recommendation-priority.high {
+            background: rgba(255, 107, 107, 0.2);
+            color: #FF6B6B;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+        }
+
+        .recommendation-priority.medium {
+            background: rgba(255, 179, 71, 0.2);
+            color: #FFB347;
+            border: 1px solid rgba(255, 179, 71, 0.3);
+        }
+
+        .recommendation-priority.low {
+            background: rgba(54, 209, 220, 0.2);
+            color: #36D1DC;
+            border: 1px solid rgba(54, 209, 220, 0.3);
+        }
+
+        /* إشعارات */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 1.5rem 2rem;
+            border-radius: 15px;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 10001;
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: rgba(54, 209, 220, 0.2);
+            border-left: 4px solid #36D1DC;
+        }
+
+        .notification.error {
+            background: rgba(255, 107, 107, 0.2);
+            border-left: 4px solid #FF6B6B;
+        }
+
+        .notification.info {
+            background: rgba(108, 99, 255, 0.2);
+            border-left: 4px solid #6C63FF;
+        }
+
+        /* التكيف مع الشاشات الصغيرة */
+        @media (max-width: 1200px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .reports-page {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 2.2rem;
+            }
+            
+            .page-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .trends-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .trend-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .trend-icon {
+                margin: 0 0 1.5rem 0;
+            }
+            
+            .recommendation-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .recommendation-icon {
+                margin: 0 0 1.5rem 0;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+            
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- تأثير الجسيمات الخلفية -->
+    <div class="particles-background" id="particles"></div>
+
+    <div class="reports-page">
+        <!-- شريط التنقل السريع -->
+        <div class="quick-nav">
+            <div class="card">
+                <div class="card-body">
+                    <nav class="breadcrumb-nav">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="#" class="breadcrumb-link">
+                                    <i class="fas fa-home"></i>
+                                    الرئيسية
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active">
+                                <i class="fas fa-chart-bar"></i>
+                                التقارير
+                            </li>
+                        </ol>
+                    </nav>
+                    
+                    <!-- روابط سريعة -->
+                    <div class="quick-links">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('dashboard.index') }}" class="quick-link-card">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>لوحة التحكم</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('devices.devices_list') }}" class="quick-link-card">
+                                    <i class="fas fa-desktop"></i>
+                                    <span>الأجهزة</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('alerts.alerts_list') }}" class="quick-link-card">
+                                    <i class="fas fa-bell"></i>
+                                    <span>التنبيهات</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('analytics.analytics_page') }}" class="quick-link-card">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>التحليلات المتقدمة</span>
+                                </a>
+                            </div>
+                            <div class="col-md-3 col-sm-6 mb-3">
+                                <a href="{{ url_for('help') }}" class="quick-link-card">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>المساعدة</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- رأس الصفحة -->
+        <div class="page-header">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="page-title">
+                                <i class="fas fa-chart-bar"></i>
+                                التقارير والإحصائيات
+                            </h1>
+                            <p class="page-subtitle">تحليل شامل لأداء الأجهزة وإحصائيات النظام</p>
+                        </div>
+                        <div class="page-actions">
+                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-tachometer-alt"></i>
+                                لوحة التحكم
+                            </a>
+                            <a href="{{ url_for('devices.devices_list') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-desktop"></i>
+                                الأجهزة
+                            </a>
+                            <a href="{{ url_for('alerts.alerts_list') }}" class="btn btn-outline-info">
+                                <i class="fas fa-bell"></i>
+                                التنبيهات
+                            </a>
+                            <a href="{{ url_for('analytics.analytics_page') }}" class="btn btn-outline-success">
+                                <i class="fas fa-chart-line"></i>
+                                التحليلات المتقدمة
+                            </a>
+                            <a href="{{ url_for('help') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-question-circle"></i>
+                                المساعدة
+                            </a>
+                            <button class="btn btn-primary" onclick="generateReport()">
+                                <i class="fas fa-file-pdf"></i>
+                                تصدير PDF
+                            </button>
+                            <button class="btn btn-success" onclick="exportToExcel()">
+                                <i class="fas fa-file-excel"></i>
+                                تصدير Excel
+                            </button>
+                            <button class="btn btn-warning" onclick="refreshReports()">
+                                <i class="fas fa-sync-alt"></i>
+                                تحديث
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- فلاتر التقارير -->
+        <div class="filters-section">
+            <div class="card">
+                <div class="card-body">
+                    <div class="filters-grid">
+                        <div class="filter-group">
+                            <label for="period-filter" class="filter-label">
+                                <i class="fas fa-calendar"></i>
+                                الفترة الزمنية
+                            </label>
+                            <select id="period-filter" class="form-control">
+                                <option value="today">اليوم</option>
+                                <option value="week" selected>هذا الأسبوع</option>
+                                <option value="month">هذا الشهر</option>
+                                <option value="quarter">هذا الربع</option>
+                                <option value="year">هذا العام</option>
+                                <option value="custom">فترة مخصصة</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="device-filter" class="filter-label">
+                                <i class="fas fa-desktop"></i>
+                                الجهاز
+                            </label>
+                            <select id="device-filter" class="form-control">
+                                <option value="">جميع الأجهزة</option>
+                                <option value="1">جهاز المدير</option>
+                                <option value="2">خادم قاعدة البيانات</option>
+                                <option value="3">كمبيوتر المختبر 1</option>
+                                <option value="4">كمبيوتر العرض</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="metric-filter" class="filter-label">
+                                <i class="fas fa-chart-line"></i>
+                                المؤشر
+                            </label>
+                            <select id="metric-filter" class="form-control">
+                                <option value="">جميع المؤشرات</option>
+                                <option value="cpu">استخدام المعالج</option>
+                                <option value="ram">استخدام الذاكرة</option>
+                                <option value="disk">استخدام القرص</option>
+                                <option value="temperature">درجة الحرارة</option>
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <button class="btn btn-primary" onclick="applyFilters()">
+                                <i class="fas fa-filter"></i>
+                                تطبيق الفلاتر
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ملخص سريع -->
+        <div class="summary-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <div class="stat-number">24</div>
+                    <div class="stat-label">إجمالي الأجهزة</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +2 هذا الأسبوع
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">98.5%</div>
+                    <div class="stat-label">معدل التشغيل</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-up"></i>
+                        +0.5% من الأسبوع الماضي
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">التنبيهات هذا الأسبوع</div>
+                    <div class="stat-change negative">
+                        <i class="fas fa-arrow-up"></i>
+                        +3 من الأسبوع الماضي
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">2.3 ساعة</div>
+                    <div class="stat-label">متوسط وقت الاستجابة</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-arrow-down"></i>
+                        -0.5 ساعة من الأسبوع الماضي
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الرسوم البيانية -->
+        <div class="charts-section">
+            <div class="grid grid-2">
+                <!-- مخطط استخدام الموارد -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-area"></i>
+                            استخدام الموارد
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="resource-usage-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+                
+                <!-- مخطط حالة الأجهزة -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-pie"></i>
+                            توزيع حالة الأجهزة
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="device-status-chart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-1">
+                <!-- مخطط التنبيهات الزمني -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-line"></i>
+                            التنبيهات عبر الوقت
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="alerts-timeline-chart" width="800" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تقارير مفصلة -->
+        <div class="detailed-reports">
+            <div class="grid grid-2">
+                <!-- تقرير أداء الأجهزة -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-tachometer-alt"></i>
+                            أداء الأجهزة
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="performance-table">
+                            <table class="reports-table">
+                                <thead>
+                                    <tr>
+                                        <th>الجهاز</th>
+                                        <th>CPU</th>
+                                        <th>RAM</th>
+                                        <th>Disk</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <div class="device-info">
+                                                <i class="fas fa-desktop"></i>
+                                                جهاز المدير
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">45%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 45%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">60%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 60%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">30%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 30%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status status-healthy">سليم</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="device-info">
+                                                <i class="fas fa-server"></i>
+                                                خادم قاعدة البيانات
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">75%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-warning" style="width: 75%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">85%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-warning" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">65%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 65%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status status-warning">تحذير</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="device-info">
+                                                <i class="fas fa-laptop"></i>
+                                                كمبيوتر المختبر 1
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">25%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 25%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">40%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 40%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">55%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar" style="width: 55%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status status-healthy">سليم</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <div class="device-info">
+                                                <i class="fas fa-tv"></i>
+                                                كمبيوتر العرض
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">95%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-danger" style="width: 95%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">90%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-danger" style="width: 90%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="metric-cell">
+                                                <span class="metric-value">85%</span>
+                                                <div class="progress">
+                                                    <div class="progress-bar progress-bar-warning" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="status status-critical">حرج</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- تقرير التنبيهات -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-bell"></i>
+                            تقرير التنبيهات
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alerts-summary">
+                            <div class="alert-summary-item critical">
+                                <div class="alert-type critical">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span>تنبيهات حرجة</span>
+                                </div>
+                                <div class="alert-count">3</div>
+                                <div class="alert-trend positive">
+                                    <i class="fas fa-arrow-down"></i>
+                                    -50%
+                                </div>
+                            </div>
+                            
+                            <div class="alert-summary-item warning">
+                                <div class="alert-type warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>تنبيهات تحذيرية</span>
+                                </div>
+                                <div class="alert-count">8</div>
+                                <div class="alert-trend negative">
+                                    <i class="fas fa-arrow-up"></i>
+                                    +25%
+                                </div>
+                            </div>
+                            
+                            <div class="alert-summary-item info">
+                                <div class="alert-type info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>تنبيهات معلوماتية</span>
+                                </div>
+                                <div class="alert-count">15</div>
+                                <div class="alert-trend positive">
+                                    <i class="fas fa-arrow-down"></i>
+                                    -10%
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="top-alerts">
+                            <h4>أكثر التنبيهات تكراراً</h4>
+                            <div class="top-alerts-list">
+                                <div class="top-alert-item">
+                                    <span class="alert-message">ارتفاع في استخدام الذاكرة</span>
+                                    <span class="alert-frequency">12 مرة</span>
+                                </div>
+                                <div class="top-alert-item">
+                                    <span class="alert-message">ارتفاع في درجة الحرارة</span>
+                                    <span class="alert-frequency">8 مرات</span>
+                                </div>
+                                <div class="top-alert-item">
+                                    <span class="alert-message">امتلاء القرص الصلب</span>
+                                    <span class="alert-frequency">5 مرات</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- تحليل الاتجاهات -->
+        <div class="trends-analysis">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        تحليل الاتجاهات
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="trends-grid">
+                        <div class="trend-item">
+                            <div class="trend-icon positive">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>تحسن في الأداء</h4>
+                                <p>انخفاض في متوسط استخدام المعالج بنسبة 15% هذا الأسبوع</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-item">
+                            <div class="trend-icon negative">
+                                <i class="fas fa-arrow-up"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>زيادة في التنبيهات</h4>
+                                <p>ارتفاع في عدد التنبيهات التحذيرية بنسبة 25%</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-item">
+                            <div class="trend-icon positive">
+                                <i class="fas fa-arrow-down"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>تحسن في الاستجابة</h4>
+                                <p>انخفاض في متوسط وقت الاستجابة بنسبة 20%</p>
+                            </div>
+                        </div>
+                        
+                        <div class="trend-item">
+                            <div class="trend-icon neutral">
+                                <i class="fas fa-minus"></i>
+                            </div>
+                            <div class="trend-content">
+                                <h4>استقرار في درجة الحرارة</h4>
+                                <p>لا توجد تغييرات كبيرة في متوسط درجة الحرارة</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- التوصيات -->
+        <div class="recommendations">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-lightbulb"></i>
+                        التوصيات
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="recommendations-list">
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="recommendation-content">
+                                <h4>تحسين الذاكرة</h4>
+                                <p>يُنصح بزيادة ذاكرة الوصول العشوائي في جهاز المكتب 2 بسبب الاستخدام العالي والمستمر للذاكرة الذي قد يؤثر على أداء النظام</p>
+                                <span class="recommendation-priority high">أولوية عالية</span>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <div class="recommendation-content">
+                                <h4>تحسين التبريد</h4>
+                                <p>يُنصح بفحص نظام التبريد في جهاز القاعة 3 بسبب ارتفاع درجة الحرارة المستمر الذي قد يؤدي إلى تلف المكونات</p>
+                                <span class="recommendation-priority medium">أولوية متوسطة</span>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                            <div class="recommendation-content">
+                                <h4>تنظيف القرص الصلب</h4>
+                                <p>يُنصح بتنظيف الملفات غير الضرورية في جميع الأجهزة لتحسين الأداء وتوفير مساحة تخزينية إضافية</p>
+                                <span class="recommendation-priority low">أولوية منخفضة</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- منطقة الإشعارات -->
+    <div id="notification-area"></div>
+
+    <script>
+        // بيانات تجريبية
+        const devices = [
+            { id: 1, name: "جهاز المدير", cpu_usage: 45, ram_usage: 60, disk_usage: 30, status: "healthy" },
+            { id: 2, name: "خادم قاعدة البيانات", cpu_usage: 75, ram_usage: 85, disk_usage: 65, status: "warning" },
+            { id: 3, name: "كمبيوتر المختبر 1", cpu_usage: 25, ram_usage: 40, disk_usage: 55, status: "healthy" },
+            { id: 4, name: "كمبيوتر العرض", cpu_usage: 95, ram_usage: 90, disk_usage: 85, status: "critical" }
+        ];
+
+        // تهيئة الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            initializeCharts();
+        });
+
+        // إنشاء تأثير الجسيمات
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 40;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // حجم عشوائي
+                const size = Math.random() * 8 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // موقع عشوائي
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // تأخير عشوائي للحركة
+                particle.style.animationDelay = `${Math.random() * 20}s`;
+                
+                // لون عشوائي
+                const colors = [
+                    'rgba(108, 99, 255, 0.3)',
+                    'rgba(54, 209, 220, 0.3)',
+                    'rgba(255, 101, 132, 0.3)',
+                    'rgba(255, 179, 71, 0.3)'
+                ];
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // تهيئة الرسوم البيانية
+        function initializeCharts() {
+            createResourceUsageChart();
+            createDeviceStatusChart();
+            createAlertsTimelineChart();
+        }
+
+        // مخطط استخدام الموارد
+        function createResourceUsageChart() {
+            const ctx = document.getElementById('resource-usage-chart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['CPU', 'RAM', 'Disk', 'Network', 'Temperature'],
+                    datasets: [{
+                        label: 'النسبة المئوية',
+                        data: [65, 70, 45, 30, 60],
+                        backgroundColor: [
+                            'rgba(108, 99, 255, 0.7)',
+                            'rgba(54, 209, 220, 0.7)',
+                            'rgba(255, 101, 132, 0.7)',
+                            'rgba(255, 179, 71, 0.7)',
+                            'rgba(78, 205, 196, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(108, 99, 255, 1)',
+                            'rgba(54, 209, 220, 1)',
+                            'rgba(255, 101, 132, 1)',
+                            'rgba(255, 179, 71, 1)',
+                            'rgba(78, 205, 196, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'استخدام الموارد (%)',
+                            color: 'white',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // مخطط حالة الأجهزة
+        function createDeviceStatusChart() {
+            const ctx = document.getElementById('device-status-chart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['سليمة', 'تحذير', 'حرجة'],
+                    datasets: [{
+                        data: [18, 4, 2],
+                        backgroundColor: [
+                            'rgba(54, 209, 220, 0.7)',
+                            'rgba(255, 179, 71, 0.7)',
+                            'rgba(255, 107, 107, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 209, 220, 1)',
+                            'rgba(255, 179, 71, 1)',
+                            'rgba(255, 107, 107, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'توزيع حالة الأجهزة',
+                            color: 'white',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // مخطط التنبيهات الزمني
+        function createAlertsTimelineChart() {
+            const ctx = document.getElementById('alerts-timeline-chart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'],
+                    datasets: [
+                        {
+                            label: 'حرجة',
+                            data: [2, 1, 3, 2, 1, 0, 1],
+                            borderColor: 'rgba(255, 107, 107, 1)',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'تحذيرية',
+                            data: [5, 3, 4, 6, 2, 1, 3],
+                            borderColor: 'rgba(255, 179, 71, 1)',
+                            backgroundColor: 'rgba(255, 179, 71, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'معلوماتية',
+                            data: [8, 6, 7, 9, 5, 3, 4],
+                            borderColor: 'rgba(78, 205, 196, 1)',
+                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: 'white',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'التنبيهات عبر الوقت',
+                            color: 'white',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // تطبيق الفلاتر
+        function applyFilters() {
+            const period = document.getElementById('period-filter').value;
+            const device = document.getElementById('device-filter').value;
+            const metric = document.getElementById('metric-filter').value;
+            
+            showNotification('تم تطبيق الفلاتر بنجاح', 'success');
+            // هنا يمكن إضافة منطق تطبيق الفلاتر
+        }
+
+        // إنشاء تقرير PDF
+        function generateReport() {
+            showNotification('جاري إنشاء التقرير...', 'info');
+            setTimeout(() => {
+                showNotification('تم إنشاء التقرير بنجاح', 'success');
+            }, 2000);
+        }
+
+        // تصدير إلى Excel
+        function exportToExcel() {
+            showNotification('جاري تصدير البيانات...', 'info');
+            setTimeout(() => {
+                showNotification('تم تصدير البيانات بنجاح', 'success');
+            }, 1500);
+        }
+
+        // تحديث التقارير
+        function refreshReports() {
+            showNotification('جاري تحديث البيانات...', 'info');
+            setTimeout(() => {
+                showNotification('تم تحديث التقارير', 'success');
+            }, 1000);
+        }
+
+        // عرض الإشعارات
+        function showNotification(message, type) {
+            const notificationArea = document.getElementById('notification-area');
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            
+            let icon = '';
+            switch(type) {
+                case 'success':
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    break;
+                case 'error':
+                    icon = '<i class="fas fa-exclamation-circle"></i>';
+                    break;
+                case 'info':
+                    icon = '<i class="fas fa-info-circle"></i>';
+                    break;
+            }
+            
+            notification.innerHTML = `
+                ${icon}
+                <span>${message}</span>
+            `;
+            
+            notificationArea.appendChild(notification);
+            
+            // إظهار الإشعار
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // إخفاء الإشعار بعد 4 ثوانٍ
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notificationArea.contains(notification)) {
+                        notificationArea.removeChild(notification);
+                    }
+                }, 400);
+            }, 4000);
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام مراقبة الأجهزة</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card horizontal-card">
+            <!-- القسم الأيسر - الشعار والمعلومات -->
+            <div class="login-card-left">
+                <div class="brand-section">
+                    <div class="brand-icon">
+                        <i class="fas fa-desktop"></i>
+                    </div>
+                    <h1 class="brand-title">نظام مراقبة الأجهزة</h1>
+                    <p class="brand-subtitle">مرحباً بك في نظام التنبؤ بالأعطال والذكاء الاصطناعي</p>
+                    <div class="brand-features">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>مراقبة شاملة للأجهزة</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>ذكاء اصطناعي متقدم</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>تنبيهات فورية</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- القسم الأيمن - نموذج تسجيل الدخول -->
+            <div class="login-card-right">
+                <div class="login-form-section">
+                    <h2 class="form-title">تسجيل الدخول</h2>
+                    
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ 'danger' if category == 'error' else category }}">
+                                    <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'info-circle' }}"></i>
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" action="{{ url_for('auth.login') }}" class="login-form">
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i>
+                                اسم المستخدم
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   required 
+                                   placeholder="اكتب اسم المستخدم"
+                                   autocomplete="username">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                كلمة المرور
+                            </label>
+                            <input type="password" 
+                                   class="form-control" 
+                                   id="password" 
+                                   name="password" 
+                                   required 
+                                   placeholder="أدخل كلمة المرور"
+                                   autocomplete="current-password">
+                        </div>
+
+                        <div class="form-group">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-check-label">
+                                    <input type="checkbox" class="form-check-input" name="remember">
+                                    تذكرني
+                                </label>
+                                <a href="#" class="text-primary forgot-link">نسيت كلمة المرور؟</a>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-sign-in-alt"></i>
+                            تسجيل الدخول
+                        </button>
+                    </form>
+
+                    <div class="login-divider">
+                        <span>أو</span>
+                    </div>
+
+                    <div class="register-section">
+                        <p class="register-text">
+                            <i class="fas fa-user-plus"></i>
+                            ليس لديك حساب؟
+                        </p>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-register w-100">
+                            <i class="fas fa-user-plus"></i>
+                            إنشاء حساب جديد
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-shield-alt"></i>
+                            نظام آمن ومحمي
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- خلفية متحركة -->
+    <div class="background-animation">
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+            <div class="shape shape-5"></div>
+        </div>
+    </div>
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            box-shadow: var(--glass-shadow);
+            padding: 0;
+            width: 100%;
+            max-width: 1100px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            min-height: 600px;
+        }
+
+        .horizontal-card {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary-gradient);
+            z-index: 1;
+        }
+
+        .login-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(31, 38, 135, 0.5);
+        }
+
+        /* القسم الأيسر - الشعار والمعلومات */
+        .login-card-left {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%);
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card-left::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.05)"/></svg>');
+            opacity: 0.5;
+        }
+
+        .brand-section {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            width: 100%;
+        }
+
+        .brand-icon {
+            font-size: 5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .brand-title {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .brand-features {
+            text-align: right;
+            margin-top: 2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            justify-content: flex-end;
+        }
+
+        .feature-item i {
+            color: #4facfe;
+            font-size: 1.2rem;
+        }
+
+        /* القسم الأيمن - النموذج */
+        .login-card-right {
+            flex: 1;
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.05);
+            position: relative;
+            border-radius: 0 30px 30px 0;
+        }
+
+        .login-card-right::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 1px;
+            background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .login-form-section {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .form-title {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .login-title {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        .gradient-text {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s infinite;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .login-form {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1.1rem;
+        }
+
+        .form-label i {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* قسم إنشاء حساب جديد */
+        .login-divider {
+            position: relative;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .login-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .login-divider span {
+            position: relative;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            padding: 0 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .register-section {
+            text-align: center;
+            padding: 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+            margin-top: 1rem;
+        }
+
+        .register-text {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .register-text i {
+            color: #4facfe;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 0.9rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-register::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-register:hover::before {
+            left: 100%;
+        }
+
+        .btn-register:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-register i {
+            font-size: 1.1rem;
+        }
+
+        /* تأثيرات تفاعلية للحقول */
+        .form-group.focused .form-label {
+            color: #667eea;
+            transform: translateY(-5px);
+        }
+
+        .form-control.has-value {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .form-control:invalid {
+            border-color: #e74c3c;
+        }
+
+        .form-control:valid {
+            border-color: #27ae60;
+        }
+
+
+        /* تأثيرات التحميل */
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .fa-spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .floating-shapes {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            backdrop-filter: blur(10px);
+        }
+
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            top: 20%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .shape-2 {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            left: 80%;
+            animation-delay: 2s;
+        }
+
+        .shape-3 {
+            width: 60px;
+            height: 60px;
+            top: 80%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+
+        .shape-4 {
+            width: 100px;
+            height: 100px;
+            top: 10%;
+            left: 70%;
+            animation-delay: 1s;
+        }
+
+        .shape-5 {
+            width: 90px;
+            height: 90px;
+            top: 40%;
+            left: 50%;
+            animation-delay: 3s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(180deg);
+            }
+        }
+
+        .w-100 {
+            width: 100% !important;
+        }
+
+        .text-center {
+            text-align: center !important;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+
+        .text-primary {
+            color: #4facfe !important;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .text-primary:hover {
+            color: #00f2fe !important;
+        }
+
+        .forgot-link {
+            color: #4facfe !important;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: #00f2fe !important;
+            text-decoration: underline;
+        }
+
+        .d-flex {
+            display: flex !important;
+        }
+
+        .justify-content-between {
+            justify-content: space-between !important;
+        }
+
+        .align-items-center {
+            align-items: center !important;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem !important;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem !important;
+        }
+
+        .mt-4 {
+            margin-top: 1.5rem !important;
+        }
+
+        .my-4 {
+            margin-top: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+
+        .p-2 {
+            padding: 0.5rem !important;
+        }
+
+        .row {
+            display: flex;
+            margin: 0 -0.5rem;
+        }
+
+        .col-6 {
+            flex: 0 0 50%;
+            padding: 0 0.5rem;
+        }
+
+        .form-check-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .form-check-input {
+            margin-left: 0.5rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(10px);
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        /* استجابة للشاشات المختلفة */
+        @media (max-width: 992px) {
+            .horizontal-card {
+                flex-direction: column;
+            }
+
+            .login-card {
+                max-width: 600px;
+                min-height: auto;
+            }
+
+            .login-card-left {
+                padding: 2rem;
+                border-radius: 30px 30px 0 0;
+            }
+
+            .login-card-right {
+                padding: 2rem;
+                border-radius: 0 0 30px 30px;
+            }
+
+            .login-card-right::before {
+                display: none;
+            }
+
+            .brand-title {
+                font-size: 2rem;
+            }
+
+            .brand-icon {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                max-width: 100%;
+                border-radius: 20px;
+            }
+
+            .login-card-left {
+                padding: 2rem 1.5rem;
+            }
+
+            .login-card-right {
+                padding: 2rem 1.5rem;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+            }
+
+            .brand-subtitle {
+                font-size: 1rem;
+            }
+
+            .form-title {
+                font-size: 1.5rem;
+            }
+
+            .feature-item {
+                font-size: 1rem;
+            }
+
+            .login-container {
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand-icon {
+                font-size: 3rem;
+            }
+
+            .brand-title {
+                font-size: 1.5rem;
+            }
+
+            .form-title {
+                font-size: 1.3rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .form-group {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // تحسين تجربة المستخدم في تسجيل الدخول
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const loginForm = document.querySelector('form');
+            
+            // إضافة تأثيرات تفاعلية للحقول
+            [usernameInput, passwordInput].forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    if (!this.value) {
+                        this.parentElement.classList.remove('focused');
+                    }
+                });
+                
+                // تحقق من صحة المدخلات أثناء الكتابة
+                input.addEventListener('input', function() {
+                    if (this.value) {
+                        this.classList.add('has-value');
+                    } else {
+                        this.classList.remove('has-value');
+                    }
+                });
+            });
+            
+            // تحسين إرسال النموذج
+            loginForm.addEventListener('submit', function(e) {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                if (!username || !password) {
+                    e.preventDefault();
+                    showMessage('يرجى ملء جميع الحقول', 'error');
+                    return;
+                }
+                
+                // إضافة تأثير تحميل
+                const submitBtn = this.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الدخول...';
+                submitBtn.disabled = true;
+            });
+            
+            // دالة عرض الرسائل
+            function showMessage(message, type) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    ${message}
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span>&times;</span>
+                    </button>
+                `;
+                
+                const form = document.querySelector('form');
+                form.insertBefore(alertDiv, form.firstChild);
+                
+                // إزالة الرسالة تلقائياً بعد 5 ثوان
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 5000);
+            }
+            
+        });
+    </script>
+</body>
+</html>
+

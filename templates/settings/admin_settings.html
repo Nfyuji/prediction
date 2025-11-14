@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}الإعدادات - الأدمن{% endblock %}
+
+{% block content %}
+<div class="settings-page">
+    <div class="page-header">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="page-title">
+                    <i class="fas fa-cog"></i>
+                    الإعدادات والضبط
+                </h1>
+                <p class="page-subtitle">إعدادات النظام والملف الشخصي</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-content">
+        <!-- الملف الشخصي -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user"></i>
+                    الملف الشخصي
+                </h3>
+            </div>
+            <div class="card-body">
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="full_name">الاسم الكامل</label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" 
+                               value="{{ user.full_name if user else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">البريد الإلكتروني</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ user.email if user else '' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">رقم الهاتف</label>
+                        <input type="text" class="form-control" id="phone" name="phone" 
+                               value="{{ user.phone if user else '' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="username">اسم المستخدم</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ user.username if user else '' }}" disabled>
+                        <small class="form-text text-muted">لا يمكن تغيير اسم المستخدم</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="role">الدور</label>
+                        <input type="text" class="form-control" id="role" name="role" 
+                               value="{{ user.role if user else '' }}" disabled>
+                        <small class="form-text text-muted">الدور يتم تعيينه من قبل الأدمن</small>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        حفظ التغييرات
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- تغيير كلمة المرور -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-lock"></i>
+                    تغيير كلمة المرور
+                </h3>
+            </div>
+            <div class="card-body">
+                <form id="password-form">
+                    <div class="form-group">
+                        <label for="old_password">كلمة المرور الحالية</label>
+                        <input type="password" class="form-control" id="old_password" name="old_password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new_password">كلمة المرور الجديدة</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" 
+                               minlength="6" required>
+                        <small class="form-text text-muted">يجب أن تكون كلمة المرور 6 أحرف على الأقل</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">تأكيد كلمة المرور الجديدة</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-key"></i>
+                        تغيير كلمة المرور
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- إعدادات النظام (للأدمن فقط) -->
+        {% if session.role == 'admin' %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-server"></i>
+                    إعدادات النظام
+                </h3>
+            </div>
+            <div class="card-body">
+                <form id="system-settings-form">
+                    <div class="form-group">
+                        <label for="auto_refresh_interval">فترة التحديث التلقائي (ثانية)</label>
+                        <input type="number" class="form-control" id="auto_refresh_interval" name="auto_refresh_interval" 
+                               value="{{ system_settings.get('auto_refresh_interval', '5') if system_settings else '5' }}" min="1" max="60">
+                        <small class="form-text text-muted">الفترة بين كل تحديث تلقائي للبيانات</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert_threshold_cpu">عتبة التنبيه - استخدام CPU (%)</label>
+                        <input type="number" class="form-control" id="alert_threshold_cpu" name="alert_threshold_cpu" 
+                               value="{{ system_settings.get('alert_threshold_cpu', '90') if system_settings else '90' }}" min="0" max="100">
+                        <small class="form-text text-muted">عند تجاوز هذه النسبة، يتم إنشاء تنبيه</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="alert_threshold_ram">عتبة التنبيه - استخدام RAM (%)</label>
+                        <input type="number" class="form-control" id="alert_threshold_ram" name="alert_threshold_ram" 
+                               value="{{ system_settings.get('alert_threshold_ram', '90') if system_settings else '90' }}" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="alert_threshold_temp">عتبة التنبيه - درجة الحرارة (°C)</label>
+                        <input type="number" class="form-control" id="alert_threshold_temp" name="alert_threshold_temp" 
+                               value="{{ system_settings.get('alert_threshold_temp', '80') if system_settings else '80' }}" min="0" max="150">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        حفظ إعدادات النظام
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- إعدادات الإشعارات -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-bell"></i>
+                    إعدادات الإشعارات
+                </h3>
+            </div>
+            <div class="card-body">
+                <form id="notifications-form">
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="email_notifications" name="email_notifications" checked>
+                        <label class="form-check-label" for="email_notifications">
+                            إشعارات البريد الإلكتروني
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="critical_alerts" name="critical_alerts" checked>
+                        <label class="form-check-label" for="critical_alerts">
+                            تنبيهات حرجة فقط
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="warning_alerts" name="warning_alerts" checked>
+                        <label class="form-check-label" for="warning_alerts">
+                            تنبيهات تحذيرية
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        حفظ إعدادات الإشعارات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// تحديث الملف الشخصي
+document.getElementById('profile-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        full_name: document.getElementById('full_name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value
+    };
+    
+    fetch('/settings/api/profile', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('خطأ: ' + data.error);
+            return;
+        }
+        
+        if (data.success) {
+            alert('تم تحديث الملف الشخصي بنجاح!');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ في تحديث الملف الشخصي');
+    });
+});
+
+// تغيير كلمة المرور
+document.getElementById('password-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        old_password: document.getElementById('old_password').value,
+        new_password: document.getElementById('new_password').value,
+        confirm_password: document.getElementById('confirm_password').value
+    };
+    
+    if (formData.new_password !== formData.confirm_password) {
+        alert('كلمة المرور الجديدة غير متطابقة');
+        return;
+    }
+    
+    fetch('/settings/api/password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('خطأ: ' + data.error);
+            return;
+        }
+        
+        if (data.success) {
+            alert('تم تغيير كلمة المرور بنجاح!');
+            document.getElementById('password-form').reset();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ في تغيير كلمة المرور');
+    });
+});
+
+// تحديث إعدادات النظام (للأدمن فقط)
+{% if session.role == 'admin' %}
+if (document.getElementById('system-settings-form')) {
+    document.getElementById('system-settings-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            auto_refresh_interval: document.getElementById('auto_refresh_interval').value,
+            alert_threshold_cpu: document.getElementById('alert_threshold_cpu').value,
+            alert_threshold_ram: document.getElementById('alert_threshold_ram').value,
+            alert_threshold_temp: document.getElementById('alert_threshold_temp').value
+        };
+        
+        fetch('/settings/api/system', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert('خطأ: ' + data.error);
+                return;
+            }
+            
+            if (data.success) {
+                alert('تم تحديث إعدادات النظام بنجاح!');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ في تحديث إعدادات النظام');
+        });
+    });
+}
+{% endif %}
+
+// تحديث إعدادات الإشعارات
+document.getElementById('notifications-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        email_notifications: document.getElementById('email_notifications').checked,
+        critical_alerts: document.getElementById('critical_alerts').checked,
+        warning_alerts: document.getElementById('warning_alerts').checked
+    };
+    
+    fetch('/settings/api/notifications', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('خطأ: ' + data.error);
+            return;
+        }
+        
+        if (data.success) {
+            alert('تم تحديث إعدادات الإشعارات بنجاح!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('حدث خطأ في تحديث إعدادات الإشعارات');
+    });
+});
+</script>
+
+<style>
+.settings-page {
+    padding: 20px;
+}
+
+.settings-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-check {
+    margin-bottom: 15px;
+}
+</style>
+{% endblock %}
+
