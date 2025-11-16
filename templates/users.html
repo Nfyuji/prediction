@@ -75,216 +75,116 @@
 
 <!-- نافذة إضافة مستخدم -->
 <div id="add-user-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-container">
-        <div class="modal glass premium-modal">
-            <div class="modal-header premium-header">
-                <div class="modal-title-section">
-                    <div class="modal-icon">
-                        <i class="fas fa-user-plus"></i>
-                    </div>
-                    <div>
-                        <h3>إضافة مستخدم جديد</h3>
-                        <p class="modal-subtitle">املأ البيانات لإنشاء حساب مستخدم جديد</p>
-                    </div>
+    <div class="modal glass">
+        <div class="modal-header">
+            <h3>إضافة مستخدم جديد</h3>
+            <button class="close-modal" onclick="closeAddUserModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-user-form">
+                <div class="form-group">
+                    <label>اسم المستخدم *</label>
+                    <input type="text" name="username" class="form-control" required>
                 </div>
-                <button class="close-modal premium-close" onclick="closeAddUserModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="add-user-form" class="premium-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>اسم المستخدم *</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-user"></i>
-                                <input type="text" name="username" class="form-control premium-input" required>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>كلمة المرور *</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-lock"></i>
-                                <input type="password" name="password" class="form-control premium-input" required minlength="6">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>الاسم الكامل</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-id-card"></i>
-                            <input type="text" name="full_name" class="form-control premium-input">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>البريد الإلكتروني</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" name="email" class="form-control premium-input">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>الهاتف</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-phone"></i>
-                                <input type="text" name="phone" class="form-control premium-input">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>الدور *</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-user-tag"></i>
-                            <select name="role" class="form-control premium-input" required>
-                                <option value="user">مستخدم</option>
-                                <option value="technician">تقني</option>
-                                <option value="manager">مدير</option>
-                                <option value="admin">أدمن</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-actions premium-actions">
-                        <button type="button" class="btn-secondary premium-btn-secondary" onclick="closeAddUserModal()">
-                            <i class="fas fa-times"></i>
-                            إلغاء
-                        </button>
-                        <button type="submit" class="btn-primary premium-btn-primary">
-                            <i class="fas fa-user-plus"></i>
-                            إضافة مستخدم
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="form-group">
+                    <label>كلمة المرور *</label>
+                    <input type="password" name="password" class="form-control" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" name="full_name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" name="email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>الهاتف</label>
+                    <input type="text" name="phone" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>الدور *</label>
+                    <select name="role" class="form-control" required>
+                        <option value="user">مستخدم</option>
+                        <option value="technician">تقني</option>
+                        <option value="manager">مدير</option>
+                        <option value="admin">أدمن</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeAddUserModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary">إضافة مستخدم</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- نافذة تعديل مستخدم -->
 <div id="edit-user-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-container">
-        <div class="modal glass premium-modal">
-            <div class="modal-header premium-header">
-                <div class="modal-title-section">
-                    <div class="modal-icon">
-                        <i class="fas fa-user-edit"></i>
-                    </div>
-                    <div>
-                        <h3>تعديل مستخدم</h3>
-                        <p class="modal-subtitle">قم بتعديل بيانات المستخدم المحدد</p>
-                    </div>
+    <div class="modal glass">
+        <div class="modal-header">
+            <h3>تعديل مستخدم</h3>
+            <button class="close-modal" onclick="closeEditUserModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="edit-user-form">
+                <input type="hidden" name="user_id" id="edit-user-id">
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" name="full_name" id="edit-full-name" class="form-control">
                 </div>
-                <button class="close-modal premium-close" onclick="closeEditUserModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="edit-user-form" class="premium-form">
-                    <input type="hidden" name="user_id" id="edit-user-id">
-                    <div class="form-group">
-                        <label>الاسم الكامل</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-id-card"></i>
-                            <input type="text" name="full_name" id="edit-full-name" class="form-control premium-input">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>البريد الإلكتروني</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" name="email" id="edit-email" class="form-control premium-input">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>الهاتف</label>
-                            <div class="input-with-icon">
-                                <i class="fas fa-phone"></i>
-                                <input type="text" name="phone" id="edit-phone" class="form-control premium-input">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>الدور</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-user-tag"></i>
-                            <select name="role" id="edit-role" class="form-control premium-input">
-                                <option value="user">مستخدم</option>
-                                <option value="technician">تقني</option>
-                                <option value="manager">مدير</option>
-                                <option value="admin">أدمن</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group premium-checkbox">
-                        <label class="checkbox-container">
-                            <input type="checkbox" name="is_active" id="edit-is-active">
-                            <span class="checkmark"></span>
-                            مستخدم نشط
-                        </label>
-                    </div>
-                    <div class="form-actions premium-actions">
-                        <button type="button" class="btn-secondary premium-btn-secondary" onclick="closeEditUserModal()">
-                            <i class="fas fa-times"></i>
-                            إلغاء
-                        </button>
-                        <button type="submit" class="btn-primary premium-btn-primary">
-                            <i class="fas fa-save"></i>
-                            حفظ التغييرات
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" name="email" id="edit-email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>الهاتف</label>
+                    <input type="text" name="phone" id="edit-phone" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>الدور</label>
+                    <select name="role" id="edit-role" class="form-control">
+                        <option value="user">مستخدم</option>
+                        <option value="technician">تقني</option>
+                        <option value="manager">مدير</option>
+                        <option value="admin">أدمن</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="is_active" id="edit-is-active">
+                        مستخدم نشط
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEditUserModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- نافذة تغيير كلمة المرور -->
 <div id="change-password-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-container">
-        <div class="modal glass premium-modal">
-            <div class="modal-header premium-header">
-                <div class="modal-title-section">
-                    <div class="modal-icon">
-                        <i class="fas fa-key"></i>
-                    </div>
-                    <div>
-                        <h3>تغيير كلمة المرور</h3>
-                        <p class="modal-subtitle">تعيين كلمة مرور جديدة للمستخدم</p>
-                    </div>
+    <div class="modal glass">
+        <div class="modal-header">
+            <h3>تغيير كلمة المرور</h3>
+            <button class="close-modal" onclick="closeChangePasswordModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="change-password-form">
+                <input type="hidden" name="user_id" id="change-password-user-id">
+                <div class="form-group">
+                    <label>كلمة المرور الجديدة *</label>
+                    <input type="password" name="new_password" class="form-control" required minlength="6">
                 </div>
-                <button class="close-modal premium-close" onclick="closeChangePasswordModal()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="change-password-form" class="premium-form">
-                    <input type="hidden" name="user_id" id="change-password-user-id">
-                    <div class="form-group">
-                        <label>كلمة المرور الجديدة *</label>
-                        <div class="input-with-icon">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" name="new_password" class="form-control premium-input" required minlength="6">
-                        </div>
-                        <div class="password-strength">
-                            <div class="strength-bar">
-                                <div class="strength-fill" id="password-strength-fill"></div>
-                            </div>
-                            <span class="strength-text" id="password-strength-text">قوة كلمة المرور</span>
-                        </div>
-                    </div>
-                    <div class="form-actions premium-actions">
-                        <button type="button" class="btn-secondary premium-btn-secondary" onclick="closeChangePasswordModal()">
-                            <i class="fas fa-times"></i>
-                            إلغاء
-                        </button>
-                        <button type="submit" class="btn-primary premium-btn-primary">
-                            <i class="fas fa-key"></i>
-                            تغيير كلمة المرور
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeChangePasswordModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary">تغيير كلمة المرور</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -437,7 +337,54 @@
         background: #c0392b;
     }
 
-    /* تحسينات التصميم الفاخر للقوائم المنبثقة */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 1rem;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+    }
+
+    .btn-secondary {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
     .modal-overlay {
         position: fixed;
         top: 0;
@@ -449,362 +396,59 @@
         align-items: center;
         justify-content: center;
         z-index: 2000;
-        backdrop-filter: blur(5px);
-        -webkit-backdrop-filter: blur(5px);
-        padding: 1rem;
     }
 
-    .modal-container {
-        width: 100%;
-        max-width: 600px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .premium-modal {
-        width: 100%;
-        background: linear-gradient(135deg, rgba(30, 30, 40, 0.95) 0%, rgba(20, 20, 30, 0.98) 100%);
+    .modal {
+        width: 90%;
+        max-width: 500px;
+        background: var(--glass-bg);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid var(--glass-border);
         border-radius: 20px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-                    0 0 0 1px rgba(255, 255, 255, 0.05),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        overflow: hidden;
-        animation: modalAppear 0.3s ease-out;
+        box-shadow: var(--glass-shadow);
     }
 
-    @keyframes modalAppear {
-        from {
-            opacity: 0;
-            transform: translateY(20px) scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
-    }
-
-    .premium-header {
-        padding: 1.5rem 2rem;
+    .modal-header {
+        padding: 1.5rem;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
 
-    .modal-title-section {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .modal-icon {
-        width: 50px;
-        height: 50px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, var(--primary-color), #8e44ad);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.25rem;
-        box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
-    }
-
     .modal-header h3 {
         margin: 0;
         font-size: 1.5rem;
-        font-weight: 700;
-        background: linear-gradient(90deg, #fff, #e0e0e0);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
     }
 
-    .modal-subtitle {
-        margin: 0.25rem 0 0 0;
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.9rem;
-    }
-
-    .premium-close {
-        background: rgba(255, 255, 255, 0.1);
+    .close-modal {
+        background: none;
         border: none;
         color: white;
-        font-size: 1rem;
+        font-size: 1.5rem;
         cursor: pointer;
-        width: 40px;
-        height: 40px;
+        width: 30px;
+        height: 30px;
         display: flex;
         align-items: center;
         justify-content: center;
-        border-radius: 10px;
+        border-radius: 50%;
         transition: all 0.3s ease;
     }
 
-    .premium-close:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: rotate(90deg);
+    .close-modal:hover {
+        background: rgba(255, 255, 255, 0.1);
     }
 
     .modal-body {
-        padding: 2rem;
-    }
-
-    .premium-form {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .form-group {
-        margin-bottom: 0;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-
-    .input-with-icon {
-        position: relative;
-    }
-
-    .input-with-icon i {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: rgba(255, 255, 255, 0.5);
-        z-index: 1;
-    }
-
-    .premium-input {
-        width: 100%;
-        padding: 0.85rem 3rem 0.85rem 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 12px;
-        background: rgba(255, 255, 255, 0.07);
-        color: white;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .premium-input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0 0 0 3px rgba(142, 68, 173, 0.2);
-    }
-
-    .premium-input::placeholder {
-        color: rgba(255, 255, 255, 0.4);
-    }
-
-    .premium-checkbox {
-        margin-top: 0.5rem;
-    }
-
-    .checkbox-container {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        color: rgba(255, 255, 255, 0.9);
-        font-weight: 500;
-        gap: 0.75rem;
-    }
-
-    .checkbox-container input {
-        display: none;
-    }
-
-    .checkmark {
-        width: 20px;
-        height: 20px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-
-    .checkbox-container input:checked + .checkmark {
-        background: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-
-    .checkbox-container input:checked + .checkmark:after {
-        content: "✓";
-        color: white;
-        font-size: 0.8rem;
-        font-weight: bold;
-    }
-
-    .password-strength {
-        margin-top: 0.75rem;
-    }
-
-    .strength-bar {
-        height: 6px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
-        overflow: hidden;
-        margin-bottom: 0.5rem;
-    }
-
-    .strength-fill {
-        height: 100%;
-        width: 0%;
-        border-radius: 3px;
-        transition: all 0.3s ease;
-    }
-
-    .strength-text {
-        font-size: 0.8rem;
-        color: rgba(255, 255, 255, 0.6);
-    }
-
-    .premium-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: flex-end;
-        margin-top: 1rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .premium-btn-secondary, .premium-btn-primary {
-        padding: 0.85rem 1.5rem;
-        border-radius: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        border: none;
-        font-size: 0.9rem;
-    }
-
-    .premium-btn-secondary {
-        background: rgba(255, 255, 255, 0.1);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .premium-btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-    }
-
-    .premium-btn-primary {
-        background: linear-gradient(135deg, var(--primary-color), #8e44ad);
-        color: white;
-        box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
-    }
-
-    .premium-btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(142, 68, 173, 0.4);
-    }
-
-    /* تحسينات للاستجابة على الشاشات المختلفة */
-    @media (max-width: 768px) {
-        .modal-container {
-            max-width: 95%;
-        }
-        
-        .premium-header {
-            padding: 1.25rem;
-        }
-        
-        .modal-body {
-            padding: 1.5rem;
-        }
-        
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-        
-        .premium-actions {
-            flex-direction: column;
-        }
-        
-        .premium-btn-secondary, .premium-btn-primary {
-            width: 100%;
-            justify-content: center;
-        }
+        padding: 1.5rem;
     }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // إضافة دالة لتقييم قوة كلمة المرور
-    function checkPasswordStrength(password) {
-        let strength = 0;
-        const strengthFill = document.getElementById('password-strength-fill');
-        const strengthText = document.getElementById('password-strength-text');
-        
-        if (!password) {
-            strengthFill.style.width = '0%';
-            strengthFill.style.background = 'transparent';
-            strengthText.textContent = 'قوة كلمة المرور';
-            return;
-        }
-        
-        // طول كلمة المرور
-        if (password.length >= 8) strength += 25;
-        
-        // وجود أحرف كبيرة وصغيرة
-        if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) strength += 25;
-        
-        // وجود أرقام
-        if (password.match(/([0-9])/)) strength += 25;
-        
-        // وجود رموز خاصة
-        if (password.match(/([!,%,&,@,#,$,^,*,?,_,~])/)) strength += 25;
-        
-        // تحديث شريط القوة
-        strengthFill.style.width = strength + '%';
-        
-        // تحديث اللون والنص بناءً على القوة
-        if (strength < 50) {
-            strengthFill.style.background = '#e74c3c';
-            strengthText.textContent = 'ضعيفة';
-        } else if (strength < 75) {
-            strengthFill.style.background = '#f39c12';
-            strengthText.textContent = 'متوسطة';
-        } else {
-            strengthFill.style.background = '#27ae60';
-            strengthText.textContent = 'قوية';
-        }
-    }
-    
-    // إضافة مستمع حدث لتقييم كلمة المرور
-    document.addEventListener('DOMContentLoaded', function() {
-        const passwordInput = document.querySelector('#change-password-form input[name="new_password"]');
-        if (passwordInput) {
-            passwordInput.addEventListener('input', function() {
-                checkPasswordStrength(this.value);
-            });
-        }
-    });
-
-    // بقية الكود الأصلي يبقى كما هو
     let currentEditUserId = null;
     const currentUserId = {{ session.user_id | default(0) }};
     const userRole = '{{ session.role | default("user") }}';
@@ -929,13 +573,6 @@
         document.getElementById('change-password-user-id').value = userId;
         document.getElementById('change-password-modal').style.display = 'flex';
         document.getElementById('change-password-form').reset();
-        
-        // إعادة تعيين شريط قوة كلمة المرور
-        const strengthFill = document.getElementById('password-strength-fill');
-        const strengthText = document.getElementById('password-strength-text');
-        strengthFill.style.width = '0%';
-        strengthFill.style.background = 'transparent';
-        strengthText.textContent = 'قوة كلمة المرور';
     }
 
     // إغلاق نافذة تغيير كلمة المرور
